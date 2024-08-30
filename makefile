@@ -2,7 +2,7 @@
 CC 		= g++
 CFLAGS  = -g -Wall 
 SRC 	= src
-TARGET 	= $(SRC)/main.cpp $(SRC)/prompt.cpp $(SRC)/tim.cpp
+TARGET 	= $(SRC)/main.cpp $(SRC)/prompt.cpp $(SRC)/date.cpp
 
 main: $(TARGET)
 	$(CC) $(CFLAGS) -o main $(TARGET)
