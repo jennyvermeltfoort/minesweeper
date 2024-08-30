@@ -30,5 +30,6 @@ typedef enum DAY
 err_code_e date_test_input(struct tm *time_input, int *input, date_type_e type);
 date_day_e date_convert_to_day(struct tm *time_input);
 date_day_e date_char_convert_to_day(char input[2]);
+int date_get_age(struct tm *time_input);
 
 #endif // __date_H

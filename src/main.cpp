@@ -13,14 +13,16 @@ Date initial: 8-30-2024
 #define _STUDENT_NUMBER 3787494
 #define _STUDENT_NAME "Jenny Vermeltfoort"
 #define _DATE_UPDATED "8-30-2024"
+#define _OPDRACHT "1"
+#define _STUDIE "Bachelor Informatica"
 
 prompt_list_t prompt_list_t_informal = {
     .day_str = "Welke dag ben je geboren? (ma, di, wo, do, vr, za, zo)",
 };
 prompt_list_t prompt_list_t_formal = {
-    .year = "Verstrek uw geboorte jaar.",
-    .month = "Verstrek de maand waarin u geboren bent.",
-    .day = "Verstrek de dag waarop u geboren bent.",
+    .year = "Verstrek je geboorte jaar.",
+    .month = "Verstrek de maand waarin je geboren bent.",
+    .day = "Verstrek de dag waarop je geboren bent.",
     .day_str = "Verstrek de dag waarop u bent geboren. (ma, di, wo, do, vr, za, zo)",
 };
 
@@ -29,12 +31,17 @@ void print_info(void)
     printf("Naam: %s\n", _STUDENT_NAME);
     printf("Student nummer: %i\n", _STUDENT_NUMBER);
     printf("Laatst geupdate: %s\n", _DATE_UPDATED);
+    printf("Opdracht: %s\n", _OPDRACHT);
+    printf("Studie: %s\n", _STUDIE);
+    printf("\n");
+    printf("Vragenlijst: Ben jij geschikt voor een studie aan de universiteit?\n");
 }
 
 int main(int argc, char **argv)
 {
     err_code_e rt_val = ERR_OK;
     int input_int = 0;
+    prompt_list_t *prompt_list = &prompt_list_t_formal;
 
     int input_char_size = 2;
     char input_char[input_char_size] = {0};
@@ -48,7 +55,7 @@ int main(int argc, char **argv)
 
     print_info();
 
-    rt_val = prompt_ask_int(&prompt_list_t_formal.year, &input_int);
+    rt_val = prompt_ask_int(&prompt_list->year, &input_int);
     if (rt_val != ERR_OK)
     {
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
@@ -60,7 +67,7 @@ int main(int argc, char **argv)
         return rt_val;
     }
 
-    rt_val = prompt_ask_int(&prompt_list_t_formal.month, &input_int);
+    rt_val = prompt_ask_int(&prompt_list->month, &input_int);
     if (rt_val != ERR_OK)
     {
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
@@ -72,7 +79,7 @@ int main(int argc, char **argv)
         return rt_val;
     }
 
-    rt_val = prompt_ask_int(&prompt_list_t_formal.day, &input_int);
+    rt_val = prompt_ask_int(&prompt_list->day, &input_int);
     if (rt_val != ERR_OK)
     {
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
@@ -84,8 +91,13 @@ int main(int argc, char **argv)
         return rt_val;
     }
 
+    if (date_get_age(time_input) < 30)
+    {
+        prompt_list = &prompt_list_t_informal;
+    }
+
     day_expected = date_convert_to_day(time_input);
-    rt_val = prompt_ask_char(&prompt_list_t_formal.day_str, input_char, input_char_size);
+    rt_val = prompt_ask_char(&prompt_list->day_str, input_char, input_char_size);
     if (rt_val != ERR_OK)
     {
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
@@ -100,7 +112,7 @@ int main(int argc, char **argv)
 
     if (day_input != day_expected)
     {
-        printf("Invalide dag opgegeven, gegevens verwijderd!\n");
+        printf("De opgegeven dag is niet valide, gegevens verwijderd!\n");
     }
 
     return 0;
