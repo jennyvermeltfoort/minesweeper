@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-
 #ifndef __MATH_H
 #define __MATH_H
 
@@ -14,10 +13,18 @@ MATH_TYPE_ANSWER_FLOAT,
 
 } math_type_answer_e;
 
+/* Initialize math module, when called all values are (re)generated.
+* Requires preinitialized srand.
+*/
 void math_init();
 
+/* Test whether the input answer is correct.
+* Returns true when correct, false when not.
+*/
 bool math_test_answer(int16_t* answer_int, float *answer_float, math_type_answer_e type);
 
+/* Prints the math problem string using printf.
+*/
 void math_print_problem_string(void);
 
 #endif // __MATH_H

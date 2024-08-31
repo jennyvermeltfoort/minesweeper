@@ -5,7 +5,7 @@
 
 #include "err.h"
 
-#define _SIZE_PROMPT_LINE_CHARS 96
+#define _SIZE_PROMPT_LINE_CHARS 128
 
 #ifndef __PROMPT_H
 #define __PROMPT_H
@@ -20,10 +20,12 @@ typedef struct prompt_list_t
     prompt_line_t day;
     prompt_line_t day_str;
     prompt_line_t math;
-    prompt_line_t math_1;
-    prompt_line_t math_2;
-    prompt_line_t math_3;
+    prompt_line_t math_teller;
+    prompt_line_t math_noemer;
+    prompt_line_t math_float;
     prompt_line_t math_fault;
+    prompt_line_t question;
+    prompt_line_t question_fault;
     prompt_line_t ok_exact;
     prompt_line_t ok_beta;
     prompt_line_t done;

@@ -8,16 +8,16 @@
 #define MATH_NUMBER_LIST_SIZE 4
 #define MATH_ANSWER_FLOAT_LIMIT 0.1
 
-
 int16_t math_number_list[MATH_NUMBER_LIST_SIZE] = {0}; // teller_1, noemer_1, teller_2, noemer_2
 int16_t math_answer_list[2] = {0};                     // teller, noemer
 float math_answer_float = 0;
-    char math_sign = (rand() % 2) ? '+' : '-';
+char math_sign;
 
 void math_init()
 {
     uint8_t i = 0;
-srand(time(NULL));
+
+    math_sign = (rand() % 2) ? '+' : '-';
 
     for (; i < MATH_NUMBER_LIST_SIZE; i++)
     {
@@ -42,7 +42,7 @@ srand(time(NULL));
     printf("%.2f\n", math_answer_float);
 }
 
-bool math_test_answer(int16_t* answer_int, float *answer_float, math_type_answer_e type)
+bool math_test_answer(int16_t *answer_int, float *answer_float, math_type_answer_e type)
 {
     switch (type)
     {
