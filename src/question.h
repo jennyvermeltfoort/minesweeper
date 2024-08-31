@@ -35,12 +35,12 @@ question_list_t question_list_informal = {
             "a. Surrealisme",
             "b. Kubisme",
             "c. Expressionisme",
-            "d. Dadaïsme",
+            "d. Dadaisme",
         },
         .answer = 'b',
     },
     {
-        .question = "Welke schilder staat bekend om het gebruik van druppeltechniek en het creëren van abstracte expressie in de 20e eeuw?",
+        .question = "Welke schilder staat bekend om het gebruik van druppeltechniek en het creeren van abstracte expressie in de 20e eeuw?",
         .choices = {
             "a. Pablo Picasso",
             "b. Jackson Pollock",
@@ -53,12 +53,12 @@ question_list_t question_list_informal = {
 
 question_list_t question_list_formal = {
     {
-        .question = "Welke Franse schrijver en filosoof schreef het werk L'Étranger en won de Nobelprijs voor Literatuur in 1957?",
+        .question = "Welke Franse schrijver en filosoof schreef het werk L'Etranger en won de Nobelprijs voor Literatuur in 1957?",
         .choices = {
             "a. Jean-Paul Sartre",
             "b. Albert Camus",
             "c. Marcel Proust",
-            "d. André Gide",
+            "d. Andre Gide",
         },
         .answer = 'b',
     },

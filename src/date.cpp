@@ -56,11 +56,13 @@ err_code_e
 date_test_age(struct tm *time_input)
 {
     time_t time_now = time(NULL);
+    time_t time_converted;
+
     time_input->tm_year = time_input->tm_year - 1900 + 10; // idk some weird conversion in time module
                                                            // Also add 10 (underaged) to make the difftime calc simpler.
-    time_t time_converted = mktime(time_input);
+    time_converted = mktime(time_input);
     time_input->tm_year = time_input->tm_year + 1900 - 10;
-
+    
     if (time_converted == -1)
     {
         return ERR_INVALID_INPUT;
@@ -97,7 +99,7 @@ err_code_e date_test_input(struct tm *time_input, uint32_t *input, date_type_e t
     }
 
     rt_val = date_test_age(time_input);
-    
+
     return rt_val;
 }
 

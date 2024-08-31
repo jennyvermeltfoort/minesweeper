@@ -143,7 +143,7 @@ int main(int argc, char **argv)
         }
         else if (rt_val == ERR_AGE_UNDER_TEN)
         {
-            printf("Je bent to jong om deze vragenlijst in te vullen.\n");
+            printf("De datum klopt niet of je bent to jong om deze vragenlijst in te vullen of .\n");
             return rt_val;
         }
     }
