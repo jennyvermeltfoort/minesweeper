@@ -1,6 +1,5 @@
-/*
-
-*/
+/* Prompt implementation.
+ */
 
 #include <stdio.h>
 #include "prompt.h"
@@ -8,7 +7,7 @@
 #define PROMPT_CHAR_BUF_SIZE_CHARS 64
 
 err_code_e
-prompt_ask_int(prompt_line *line, int *input)
+prompt_ask_int(prompt_line *line, uint32_t *input)
 {
     printf("%s\n", *line);
     fflush(stdout);
@@ -21,7 +20,7 @@ prompt_ask_int(prompt_line *line, int *input)
 }
 
 err_code_e
-prompt_ask_char(prompt_line *line, char *buffer, int size)
+prompt_ask_char(prompt_line *line, char *buffer, uint8_t size)
 {
     char buf[PROMPT_CHAR_BUF_SIZE_CHARS] = {0};
 

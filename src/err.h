@@ -1,6 +1,5 @@
-/*
-
-*/
+/* Generic error codes.
+ */
 
 #ifndef __ERR_H
 #define __ERR_H

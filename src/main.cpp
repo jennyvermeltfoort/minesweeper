@@ -1,24 +1,33 @@
 /*
+Opdracht 1, programmeermethoden.
+Questionaire whether the user is compatible with an university study.
 
-
+Door: Jenny Vermeltfoort.
 Date initial: 8-30-2024
 */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <time.h>
 #include "date.h"
 #include "err.h"
 #include "prompt.h"
 
+/* Metadata. */
 #define _STUDENT_NUMBER 3787494
 #define _STUDENT_NAME "Jenny Vermeltfoort"
 #define _DATE_UPDATED "8-30-2024"
 #define _OPDRACHT "1"
 #define _STUDIE "Bachelor Informatica"
 
+/* Informal prompts.
+ */
 prompt_list_t prompt_list_t_informal = {
     .day_str = "Welke dag ben je geboren? (ma, di, wo, do, vr, za, zo)",
 };
+
+/* Formal prompts.
+ */
 prompt_list_t prompt_list_t_formal = {
     .year = "Verstrek je geboorte jaar.",
     .month = "Verstrek de maand waarin je geboren bent.",
@@ -26,6 +35,8 @@ prompt_list_t prompt_list_t_formal = {
     .day_str = "Verstrek de dag waarop u bent geboren. (ma, di, wo, do, vr, za, zo)",
 };
 
+/* Print infoblock.
+ */
 void print_info(void)
 {
     printf("Naam: %s\n", _STUDENT_NAME);
@@ -40,10 +51,10 @@ void print_info(void)
 int main(int argc, char **argv)
 {
     err_code_e rt_val = ERR_OK;
-    int input_int = 0;
+    uint32_t input_int = 0;
     prompt_list_t *prompt_list = &prompt_list_t_formal;
 
-    int input_char_size = 2;
+    uint8_t input_char_size = 2;
     char input_char[input_char_size] = {0};
 
     time_t time_raw = time(NULL);
@@ -61,7 +72,7 @@ int main(int argc, char **argv)
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
         return rt_val;
     }
-    rt_val = date_test_input(time_input, &input_int, date_TYPE_YEAR);
+    rt_val = date_test_input(time_input, &input_int, DATE_TYPE_YEAR);
     if (rt_val != ERR_OK)
     {
         return rt_val;
@@ -73,7 +84,7 @@ int main(int argc, char **argv)
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
         return rt_val;
     }
-    rt_val = date_test_input(time_input, &input_int, date_TYPE_MONTH);
+    rt_val = date_test_input(time_input, &input_int, DATE_TYPE_MONTH);
     if (rt_val != ERR_OK)
     {
         return rt_val;
@@ -85,7 +96,7 @@ int main(int argc, char **argv)
         printf("%s", "De gegeven informatie is niet valide, probeer het opnieuw.\n");
         return rt_val;
     }
-    rt_val = date_test_input(time_input, &input_int, date_TYPE_DAY);
+    rt_val = date_test_input(time_input, &input_int, DATE_TYPE_DAY);
     if (rt_val != ERR_OK)
     {
         return rt_val;
