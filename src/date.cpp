@@ -93,21 +93,11 @@ err_code_e date_test_input(struct tm *time_input, uint32_t *input, date_type_e t
 
     if (rt_val == ERR_INVALID_INPUT)
     {
-        printf("%s", "De gegeven informatie niet valide, probeer het opnieuw.\n");
         return rt_val;
     }
 
     rt_val = date_test_age(time_input);
-    if (rt_val == ERR_INVALID_INPUT)
-    {
-        printf("%s", "De gegeven informatie niet valide, probeer het opnieuw.\n");
-        return rt_val;
-    }
-    else if (rt_val == ERR_AGE_UNDER_TEN)
-    {
-        printf("%s", "Je bent to jong om deze vragenlijst in te vullen.\n");
-        return rt_val;
-    }
+    
     return rt_val;
 }
 

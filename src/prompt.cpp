@@ -6,10 +6,15 @@
 
 #define PROMPT_CHAR_BUF_SIZE_CHARS 64
 
-err_code_e
-prompt_ask_int(prompt_line *line, uint32_t *input)
+void prompt_print_line(prompt_line_t *line)
 {
     printf("%s\n", *line);
+}
+
+err_code_e
+prompt_ask_uint32(prompt_line_t *line, uint32_t *input)
+{
+    prompt_print_line(line);
     fflush(stdout);
     if (scanf("%d", input))
     {
@@ -20,11 +25,37 @@ prompt_ask_int(prompt_line *line, uint32_t *input)
 }
 
 err_code_e
-prompt_ask_char(prompt_line *line, char *buffer, uint8_t size)
+prompt_ask_int16(prompt_line_t *line, int16_t *input)
+{
+    prompt_print_line(line);
+    fflush(stdout);
+    if (scanf("%hd", input))
+    {
+        return ERR_OK;
+    }
+
+    return ERR_INVALID_INPUT;
+}
+
+err_code_e
+prompt_ask_float(prompt_line_t *line, float *input)
+{
+    prompt_print_line(line);
+    fflush(stdout);
+    if (scanf("%f", input))
+    {
+        return ERR_OK;
+    }
+
+    return ERR_INVALID_INPUT;
+}
+
+err_code_e
+prompt_ask_char(prompt_line_t *line, char *buffer, uint8_t size)
 {
     char buf[PROMPT_CHAR_BUF_SIZE_CHARS] = {0};
 
-    printf("%s\n", *line);
+    prompt_print_line(line);
     fflush(stdout);
 
     if (scanf("%s", buf) == -1)
