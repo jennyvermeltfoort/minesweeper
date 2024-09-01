@@ -11,6 +11,8 @@
         "string_view": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }

@@ -1,243 +1,394 @@
-/*
-Opdracht 1, programmeermethoden.
-Questionaire whether the user is compatible with an university study.
-
-Door: Jenny Vermeltfoort.
-Date initial: 8-30-2024
-*/
-
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
 #include <cstdlib>
+#include <ctime>
+#include <iostream>
 
-#include "date.h"
-#include "err.h"
-#include "prompt.h"
-#include "math.h"
-#include "question.h"
+using namespace std;
 
 /* Metadata. */
-#define _STUDENT_NUMBER 3787494
-#define _STUDENT_NAME "Jenny Vermeltfoort"
-#define _DATE_UPDATED "8-30-2024"
-#define _OPDRACHT "1"
-#define _STUDIE "Bachelor Informatica"
+#define STUDENT_NUMBER 3787494
+#define STUDENT_NAME "Jenny Vermeltfoort"
+#define DATE_UPDATED "09-01-2024"
+#define OPDRACHT "1"
+#define STUDIE "Bachelor Informatica"
 
-typedef struct DATE_PROMPT_ITEM
-{
-    prompt_line_t *line;
-    date_type_e type;
-} date_prompt_item_t;
+#define LINE_LONG_SIZE_CHAR 128
+#define LINE_XLONG_SIZE_CHAR 164
+#define LINE_SHORT_SIZE_CHAR 64
 
-typedef struct MATH_PROMPT_ITEM
-{
-    prompt_line_t *line;
-    math_type_answer_e type;
-} math_prompt_item_t;
+#define LIMIT_FORMAL_AGE 30
 
-/* Informal prompts.
- */
-prompt_list_t prompt_list_t_informal = {
-    .day_str = "Welke dag ben je geboren? (ma, di, wo, do, vr, za, zo)",
-    .math = "Vind het antwoord van het volgende probleem: ",
-    .math_teller = "Geef de teller van je antwoord.",
-    .math_noemer = "Geef de noemer van je antwoord.",
-    .math_float = "Geef het antwoord met twee decimalen na de komma.",
-    .math_fault = "Jammer genoeg is het antwoord niet goed, we gaan verder.",
-    .question = "Geef hier het antwoord op de vraag. (a, b, c, d)",
-    .question_fault = "Helaas klopt dat niet helemaal, waarschijnlijk ben je niet geschikt voor een opleiding aan de universiteit.",
-    .ok_exact = "Helemaal goed, je bent geschikt voor een exacte studie.",
-    .ok_beta = "Helemaal goed, je bent geschikt voor een beta studie.",
-    .done = "Je bent helemaal klaar!",
-    .err_invalid = "Je gegeven informatie klopt niet helemaal, probeer het opnieuw."};
+#define MATH_ANSWER_FLOAT_LIMIT 0.1
 
-/* Formal prompts.
- */
-prompt_list_t prompt_list_formal = {
-    .year = "Geef je geboorte jaar.",
-    .month = "Geef de maand waarin je geboren bent.",
-    .day = "Geef de dag waarop je geboren bent.",
-    .day_str = "Verstrek de dag waarop u bent geboren. (ma, di, wo, do, vr, za, zo)",
-    .math = "Verstrek het antwoord van het volgende probleem: ",
-    .math_teller = "Geef de teller van het antwoord.",
-    .math_noemer = "Geef de noemer van het antwoord.",
-    .math_float = "Geef het antwoord met twee decimalen na de komma.",
-    .math_fault = "Helaas is dit fout, mogelijk is een beta studie iets voor u, de vragenlijst gaat door.",
-    .question = "Verstrek het antwoord op de vraag. (a, b, c, d)",
-    .question_fault = "Helaas is het antwoord fout, u bent waarschijnlijk niet geschikt voor een opleiding aan de universiteit.",
-    .ok_exact = "Helemaal goed, u bent geschikt voor een exacte studie.",
-    .ok_beta = "Helemaal goed, u bent geschikt voor een beta studie.",
-    .done = "U heeft de vragenlijst afgerond, een prettige dag gewenst.",
-    .err_invalid = "De gegeven informatie is niet valide, probeer het opnieuw."};
+#define DATE_NORM_YEAR \
+    1876  // Calculations will be normalized to saturday, Januari 1th 1876.
+          // Oldest person alive.
+          // 1876 is a schrikkeljaar
+#define DAYS_IN_YEAR 365
 
-/* Print infoblock.
- */
-void print_info(void)
-{
-    printf("Naam: %s\n", _STUDENT_NAME);
-    printf("Student nummer: %i\n", _STUDENT_NUMBER);
-    printf("Laatst geupdate: %s\n", _DATE_UPDATED);
-    printf("Opdracht: %s\n", _OPDRACHT);
-    printf("Studie: %s\n", _STUDIE);
-    printf("\n");
-    printf("Vragenlijst: Ben jij geschikt voor een studie aan de universiteit?\n");
-}
+typedef char line_short_t[LINE_SHORT_SIZE_CHAR];
+typedef char line_xlong_t[LINE_XLONG_SIZE_CHAR];
 
-int main(int argc, char **argv)
-{
-    err_code_e rt_val = ERR_OK;
-    uint32_t input_int32 = 0;
-    int16_t input_int16 = 0;
+/* A struct that defines a variable question inlcuding answer asked to the user. */
+typedef struct QUESTION_ITEM {
+    line_xlong_t question;
+    line_short_t choice_1;
+    line_short_t choice_2;
+    line_short_t choice_3;
+    line_short_t choice_4;
+    char answer;
+} question_item_t;
+
+/* An enumeration that describes the days in a week. */
+typedef enum DAY {
+    DATE_DAY_MONDAY,
+    DATE_DAY_TUESDAY,
+    DATE_DAY_WEDNESDAY,
+    DATE_DAY_THURSDAY,
+    DATE_DAY_FRIDAY,
+    DATE_DAY_SATERDAY,
+    DATE_DAY_SUNDAY,
+} date_day_e;
+
+/* A struct that defines all variable prompts asked to the user. */
+typedef struct prompt_list_t {
+    line_xlong_t year;
+    line_xlong_t month;
+    line_xlong_t day;
+    line_xlong_t day_str;
+    line_xlong_t math;
+    line_xlong_t math_teller;
+    line_xlong_t math_noemer;
+    line_xlong_t math_float;
+    line_xlong_t math_fault;
+    line_xlong_t question;
+    line_xlong_t question_fault;
+    line_xlong_t ok_exact;
+    line_xlong_t ok_beta;
+    line_xlong_t done;
+    line_xlong_t err_invalid;
+} prompt_list_t;
+
+/* Informal question. */
+const question_item_t question_item_informal = {
+    .question = "> Welk literair werk wordt beschouwd als het eerste moderne psychologische roman?",
+    .choice_1 = "a. Don Quichot van Miguel de Cervantes",
+    .choice_2 = "b. De Gebroeders Karamazov van Fjodor Dostojevski",
+    .choice_3 = "c. Odyssee van Homerus",
+    .choice_4 = "d. De Toverberg van Thomas Mann",
+    .answer = 'b',
+};
+
+/* Formal question. */
+const question_item_t question_item_formal = {
+    .question =
+        "> Welke Franse schrijver en filosoof schreef het werk L'Etranger en won de Nobelprijs "
+        "voor "
+        "Literatuur in 1957?",
+    .choice_1 = "a. Jean-Paul Sartre",
+    .choice_2 = "b. Albert Camus",
+    .choice_3 = "c. Marcel Proust",
+    .choice_4 = "d. Andre Gide",
+    .answer = 'b',
+};
+
+/* Informal prompts. */
+const prompt_list_t prompt_list_informal = {
+    .day_str = "> Welke dag ben je geboren? (m,d,w,v,z)",
+    .math = "> Vind het antwoord van het volgende probleem: ",
+    .math_teller = "> Geef de teller van je antwoord.",
+    .math_noemer = "> Geef de noemer van je antwoord.",
+    .math_float = "> Geef het antwoord met twee decimalen na de komma.",
+    .math_fault = "> Jammer genoeg is het antwoord niet goed, we gaan verder.",
+    .question = "> Geef hier het antwoord op de vraag. (a, b, c, d)",
+    .question_fault =
+        "> Helaas klopt dat niet helemaal, waarschijnlijk ben je niet geschikt voor een opleiding "
+        "aan de universiteit.",
+    .ok_exact = "> Helemaal goed, je bent geschikt voor een exacte studie.",
+    .ok_beta = "> Helemaal goed, je bent geschikt voor een beta studie.",
+    .done = "> Je bent helemaal klaar!",
+    .err_invalid = "> Je gegeven informatie klopt niet helemaal, probeer het opnieuw."};
+
+/* Formal prompts. */
+const prompt_list_t prompt_list_formal = {
+    .year = "> Geef je geboorte jaar.",
+    .month = "> Geef de maand waarin je geboren bent.",
+    .day = "> Geef de dag waarop je geboren bent.",
+    .day_str = "> Verstrek de dag waarop u bent geboren. (m,d,w,v,z)",
+    .math = "> Verstrek het antwoord van het volgende probleem: ",
+    .math_teller = "> Geef de teller van het antwoord.",
+    .math_noemer = "> Geef de noemer van het antwoord.",
+    .math_float = "> Geef het antwoord met twee decimalen na de komma.",
+    .math_fault =
+        "> Helaas is dit fout, mogelijk is een beta studie iets voor u, de vragenlijst gaat door.",
+    .question = "> Verstrek het antwoord op de vraag. (a, b, c, d)",
+    .question_fault =
+        "> Helaas is het antwoord fout, u bent waarschijnlijk niet geschikt voor een opleiding aan "
+        "de universiteit.",
+    .ok_exact = "> Helemaal goed, u bent geschikt voor een exacte studie.",
+    .ok_beta = "> Helemaal goed, u bent geschikt voor een beta studie.",
+    .done = "> U heeft de vragenlijst afgerond, een prettige dag gewenst.",
+    .err_invalid = "> De gegeven informatie is niet valide, probeer het opnieuw."};
+
+/* Amount of days per month from jan till dec.*/
+const uint8_t day_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+/* A list of weekdays, normalized to DATE_NORM_YEAR. 1/1/1876 is a saterday.*/
+const date_day_e day_list[] = {
+    DATE_DAY_SATERDAY,  DATE_DAY_SUNDAY,   DATE_DAY_MONDAY, DATE_DAY_TUESDAY,
+    DATE_DAY_WEDNESDAY, DATE_DAY_THURSDAY, DATE_DAY_FRIDAY,
+};
+
+int main(int argc, char **argv) {
+    time_t time_now = time(NULL);
+    struct tm *time_holder = {0};
+    time_t time_converted;
+
+    int input_int = 0;
     float input_float = 0;
-    uint8_t index = 0;
+    char input_char = 0;
 
-    time_t time_raw = time(NULL);
-    struct tm *time_input = {0};
-    time_input = localtime(&time_raw);
+    int birth_year = 0;
+    int birth_month = 0;
+    int birth_day = 0;
 
+    char math_sign;
+    int math_1_teller;
+    int math_1_noemer;
+    int math_2_teller;
+    int math_2_noemer;
+    int math_answer_teller;
+    int math_answer_noemer;
+    float math_answer_float;
+
+    int num_leap_days = 0;
+    int num_days_from_mon = 0;
+    int num_days_total = 0;
+    date_day_e day_str = DATE_DAY_MONDAY;
+
+    const prompt_list_t *prompt_list = &prompt_list_formal;
+    const question_item_t *question_item = &question_item_formal;
+
+    time_holder = localtime(&time_now);
     srand(time(NULL));
 
-    prompt_list_t *prompt_list = &prompt_list_formal;
-    question_item_t *question_item = &question_list_formal[rand() % QUESTION_LIST_SIZE];
-    char input_char_question = 0;
+    // Infoblock
+    cout << "Naam:\t\t\t" << STUDENT_NAME << "\n";
+    cout << "Student nummer:\t\t" << STUDENT_NUMBER << "\n";
+    cout << "Laatst geupdate:\t" << DATE_UPDATED << "\n";
+    cout << "Opdracht:\t\t" << OPDRACHT << "\n";
+    cout << "Studie:\t\t\t" << STUDIE << "\n";
+    cout << "\n";
+    cout << "> Vragenlijst: Ben jij geschikt voor een studie aan de universiteit?\n";
 
-    // List of prompts asked for birthday questions.
-    const uint8_t date_prompt_list_size = 3;
-    date_prompt_item_t date_prompt_list[date_prompt_list_size] = {
-        {.line = &prompt_list->year,
-         .type = DATE_TYPE_YEAR},
-        {.line = &prompt_list->month,
-         .type = DATE_TYPE_MONTH},
-        {.line = &prompt_list->day,
-         .type = DATE_TYPE_DAY},
-    };
-    const uint8_t input_char_size_day = 2;
-    char input_char_day[input_char_size_day] = {0};
-    date_day_e day_expected = DATE_DAY_INVALID;
-    date_day_e day_input = DATE_DAY_INVALID;
-
-    // List of prompts asked for math questions.
-    const uint8_t math_prompt_list_size = 2;
-    math_prompt_item_t math_prompt_list[math_prompt_list_size] = {
-        {.line = &prompt_list->math_teller,
-         .type = MATH_TYPE_ANSWER_TELLER},
-        {.line = &prompt_list->math_noemer,
-         .type = MATH_TYPE_ANSWER_NOEMER},
-    };
-
-    print_info();
-
-    for (index = 0; index < date_prompt_list_size; index++)
-    {
-        rt_val = prompt_ask_uint32(date_prompt_list[index].line, &input_int32);
-        if (rt_val != ERR_OK)
-        {
-            goto err_invalid;
-        }
-
-        rt_val = date_test_input(time_input, &input_int32, date_prompt_list[index].type);
-        if (rt_val == ERR_INVALID_INPUT)
-        {
-            goto err_invalid;
-        }
-        else if (rt_val == ERR_AGE_UNDER_TEN)
-        {
-            printf("De datum klopt niet of je bent to jong om deze vragenlijst in te vullen of .\n");
-            return rt_val;
-        }
+    // Ask for age.
+    cout << prompt_list->year << "\n";
+    cin >> input_int;
+    if (!input_int) {
+        goto end_err_invalid;
+    }
+    birth_year = input_int;
+    time_holder->tm_year = birth_year - 1900 + 10;
+    time_converted = mktime(time_holder);
+    if (difftime(time_converted, time_now) > 0) {
+        goto end_err_young;
     }
 
-    if (date_get_age(time_input) < 30)
-    {
-        prompt_list = &prompt_list_t_informal;
-        question_item = &question_list_informal[rand() % QUESTION_LIST_SIZE];
+    cout << prompt_list->month << "\n";
+    cin >> input_int;
+    if (!input_int || (1 < input_int && input_int > 12)) {
+        goto end_err_invalid;
+    }
+    birth_month = input_int;
+    time_holder->tm_mon = birth_month - 1;
+    time_converted = mktime(time_holder);
+    if (difftime(time_converted, time_now) > 0) {
+        goto end_err_young;
     }
 
-    day_expected = date_convert_to_day(time_input);
-    rt_val = prompt_ask_char(&prompt_list->day_str, input_char_day, input_char_size_day);
-    if (rt_val != ERR_OK)
-    {
-        goto err_invalid;
+    cout << prompt_list->day << "\n";
+    cin >> input_int;
+    if (!input_int || !(1 <= input_int && input_int <= 31)) {
+        goto end_err_invalid;
     }
-    day_input = date_char_convert_to_day(input_char_day);
-    if (day_input == DATE_DAY_INVALID)
-    {
-        prompt_print_line(&prompt_list->err_invalid);
-        return rt_val;
-    }
-
-    if (day_input != day_expected)
-    {
-        printf("De opgegeven dag is niet valide, gegevens verwijderd!\n");
-        goto end;
+    birth_day = input_int;
+    time_holder->tm_mday = birth_day;
+    time_converted = mktime(time_holder);
+    if (difftime(time_converted, time_now) > 0) {
+        goto end_err_young;
     }
 
-    math_init();
-    prompt_print_line(&prompt_list->math);
-    printf("\t");
-    math_print_problem_string();
-    printf("\n");
-
-    for (index = 0; index < math_prompt_list_size; index++)
-    {
-        rt_val = prompt_ask_int16(math_prompt_list[index].line, &input_int16);
-        if (rt_val != ERR_OK)
-        {
-            goto err_invalid;
-        }
-        if (!math_test_answer(&input_int16, NULL, math_prompt_list[index].type))
-        {
-            goto math_end_fault;
-        }
+    // Start asking informal questions.
+    time_holder->tm_year = time_holder->tm_year - 10;
+    time_converted = mktime(time_holder);
+    if (int(difftime(time_now, time_converted) / 31556925.9936) < LIMIT_FORMAL_AGE) {
+        prompt_list = &prompt_list_informal;
     }
 
-    rt_val = prompt_ask_float(&prompt_list->math_float, &input_float);
-    if (rt_val != ERR_OK)
+    // Calculate day of birthday.
+    num_leap_days = int((birth_year - DATE_NORM_YEAR) / 4);
+    if (((float)birth_year / 4 - int(birth_year / 4)) == 0.0 &&
+        (birth_month <= 2))  // Correction if birthyear is leap year.
     {
-        goto err_invalid;
+        num_leap_days--;
     }
-    if (!math_test_answer(NULL, &input_float, MATH_TYPE_ANSWER_FLOAT))
-    {
-        goto math_end_fault;
+    for (int i = 0; i < birth_month - 1; i++) {
+        num_days_from_mon += day_month[i];
+    }
+    num_days_total = (birth_year - DATE_NORM_YEAR) * DAYS_IN_YEAR + num_days_from_mon + birth_day -
+                     1 + num_leap_days;
+    day_str = day_list[num_days_total % 7];
+
+    // Ask for day of the birthday and test correctness.
+    cout << prompt_list->day_str << "\n";
+    cin >> input_char;
+    if (!input_char) {
+        goto end_err_invalid;
+    }
+    switch (input_char) {  // eww
+        case 'z':
+            cout << "> Welke dag:  za(a) of zo(o))?\n";
+            cin >> input_char;
+            if (!input_char) {
+                goto end_err_invalid;
+            }
+            switch (input_char) {
+                case 'a':
+                    if (day_str != DATE_DAY_SATERDAY) {
+                        goto end_err_day_str;
+                    }
+                    break;
+                case 'o':
+                    if (day_str != DATE_DAY_SUNDAY) {
+                        goto end_err_day_str;
+                    }
+                    break;
+            }
+            break;
+        case 'm':
+            if (day_str != DATE_DAY_MONDAY) {
+                goto end_err_day_str;
+            }
+            break;
+        case 'd':
+            cout << "> Welke dag: di(i) of do(o))?\n";
+            cin >> input_char;
+            if (!input_char) {
+                goto end_err_invalid;
+            }
+            switch (input_char) {
+                case 'i':
+                    if (day_str != DATE_DAY_TUESDAY) {
+                        goto end_err_day_str;
+                    }
+                    break;
+                case 'o':
+                    if (day_str != DATE_DAY_THURSDAY) {
+                        goto end_err_day_str;
+                    }
+                    break;
+            }
+            break;
+        case 'w':
+            if (day_str != DATE_DAY_WEDNESDAY) {
+                goto end_err_day_str;
+            }
+            break;
+        case 'v':
+            if (day_str != DATE_DAY_FRIDAY) {
+                goto end_err_day_str;
+            }
+            break;
+        default:
+            goto end_err_invalid;
     }
 
-    prompt_print_line(&prompt_list->ok_exact);
+    // Initialze math question.
+    math_sign = (rand() % 2) ? '+' : '-';
+    math_1_teller = rand() % 20 + 1;
+    math_1_noemer = rand() % 20 + 1;
+    math_2_teller = rand() % 20 + 1;
+    math_2_noemer = rand() % 20 + 1;
+    if (math_1_noemer == math_2_noemer) {
+        math_answer_teller = math_1_teller + (math_2_teller * ((math_sign == '-') ? -1 : 1));
+        math_answer_noemer = math_1_noemer;
+    } else {
+        math_answer_teller = math_1_teller * math_2_noemer +
+                             (math_2_teller * math_1_noemer * ((math_sign == '-') ? -1 : 1));
+        math_answer_noemer = math_1_noemer * math_2_noemer;
+    }
+    math_answer_float = (float)math_answer_teller / (float)math_answer_noemer;
+
+    // Ask math question.
+    cout << prompt_list->math;
+    cout << math_1_teller << "/" << math_1_noemer << " " << math_sign << " " << math_2_teller << "/"
+         << math_2_noemer << " = ?\n";
+    cout << prompt_list->math_teller << "\n";
+    cin >> input_int;
+    if (!input_int) {
+        goto end_err_invalid;
+    }
+    if (input_int != math_answer_teller) {
+        goto end_math_fault;
+    }
+
+    cout << prompt_list->math_noemer << "\n";
+    cin >> input_int;
+    if (!input_int) {
+        goto end_err_invalid;
+    }
+    if (input_int != math_answer_noemer) {
+        goto end_math_fault;
+    }
+
+    cout << prompt_list->math_float << "\n";
+    cin >> input_float;
+    if (!input_float) {
+        goto end_err_invalid;
+    }
+    if ((math_answer_float - MATH_ANSWER_FLOAT_LIMIT) > input_float ||
+        input_float > (math_answer_float + MATH_ANSWER_FLOAT_LIMIT)) {
+        goto end_math_fault;
+    }
+
+    cout << prompt_list->ok_exact << "\n";
     goto end;
 
-math_end_fault:
-    prompt_print_line(&prompt_list->math_fault);
-    printf("\n");
+end_math_fault:
+    cout << prompt_list->math_fault << "\n";
 
-    printf("%s\n", question_item->question);
-    for (index = 0; index < QUESTION_ITEM_CHOICES_AMOUNT; index++)
-    {
-        printf("%s\n", question_item->choices[index]);
+    // Ask beta question.
+    cout << question_item->question << "\n";
+    cout << "\t" << question_item->choice_1 << "\n";
+    cout << "\t" << question_item->choice_2 << "\n";
+    cout << "\t" << question_item->choice_3 << "\n";
+    cout << "\t" << question_item->choice_4 << "\n";
+    cout << prompt_list->question << "\n";
+
+    cin >> input_char;
+    if (!input_char) {
+        goto end_err_invalid;
     }
-    printf("\n");
-
-    rt_val = prompt_ask_char(&prompt_list->question, &input_char_question, 1);
-    if (rt_val != ERR_OK)
-    {
-        goto err_invalid;
-    }
-
-    if ((input_char_question | 0x20) != question_item->answer)
-    {
-        printf("Het juiste antwoord was %c.\n", question_item->answer);
-        prompt_print_line(&prompt_list->question_fault);
-        goto end;
+    if ((input_char | 0x20) != question_item->answer) {
+        cout << prompt_list->question_fault;
+        cout << "Het juiste antwoord was " << question_item->answer << ".\n";
+    } else {
+        cout << prompt_list->ok_beta << "\n";
     }
 
-    prompt_print_line(&prompt_list->ok_beta);
-
-    return rt_val;
-
-err_invalid:
-    prompt_print_line(&prompt_list->err_invalid);
     goto end;
+
+end_err_young:
+    cout << "! Je bent  te jong om deze vragenlijst in te vullen.\n";
+    return 1;
+
+end_err_day_str:
+    cout << "! De opgegeven dag is niet valide, gegevens verwijderd!\n";
+    return 1;
+
+end_err_invalid:
+    cout << "! De gegeven informatie is niet valide, probeer het opnieuw.\n";
+    return 1;
 
 end:
-    prompt_print_line(&prompt_list->done);
-    return rt_val;
-};
+    cout << prompt_list->done << "\n";
+    return 0;
+}
