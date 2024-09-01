@@ -7,6 +7,7 @@
 \documentclass[10pt]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage{xcolor}
 
 \parindent=0pt
 
@@ -20,12 +21,17 @@
 
 \usepackage{listings}
 % Er zijn talloze parameters ...
-\lstset{language=C++, showstringspaces=false, basicstyle=\small,
-  numbers=left, numberstyle=\tiny, numberfirstline=false, breaklines=true,
-  stepnumber=1, tabsize=8, 
-  commentstyle=\ttfamily, identifierstyle=\ttfamily,
-  stringstyle=\itshape}
-
+\lstdefinestyle{myStyle}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=none,
+  numbers=none,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{blue!40!black},
+  commentstyle=\itshape\color{green!40!black},
+  identifierstyle=\color{black},
+  backgroundcolor=\color{gray!10!white},
+}
 \title{Mooi printen}
 \author{Walter Kosters}
 
@@ -46,15 +52,9 @@ Ik heb hier ongeveer 10 uur aan besteed.
 
 \section*{Code}
 En dit is het programma:
-
-\lstinputlisting{../src/main.cpp}
-\lstinputlisting{../src/date.h}
-\lstinputlisting{../src/err.h}
-\lstinputlisting{../src/math.h}
-\lstinputlisting{../src/prompt.h}
-\lstinputlisting{../src/question.h}
-\lstinputlisting{../src/date.cpp}
-\lstinputlisting{../src/math.cpp}
-\lstinputlisting{../src/prompt.cpp}
+\lstinputlisting[caption=main.cpp,
+  label={lst:listing-cpp},
+  language=C++,
+  style=myStyle]{../src/main.cpp}
 
 \end{document}
