@@ -5,7 +5,7 @@ SRC 	= src
 TARGET 	= $(SRC)/main.cpp 
 
 main: $(TARGET)
-	$(CC) $(CFLAGS) -o main $(TARGET)
+	$(CC) $(CFLAGS) -o main.o $(TARGET)
 
 all: main
 

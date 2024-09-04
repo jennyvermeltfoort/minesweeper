@@ -7,3 +7,4 @@
 **/*.gz
 main.dSYM/
 .vscode/
+*.o
