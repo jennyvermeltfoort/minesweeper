@@ -2,8 +2,6 @@
 #include <ctime>
 #include <iostream>
 
-using namespace std;
-
 /* Metadata. */
 #define STUDENT_NUMBER 3787494
 #define STUDENT_NAME "Jenny Vermeltfoort"
@@ -11,31 +9,21 @@ using namespace std;
 #define OPDRACHT "1"
 #define STUDIE "Bachelor Informatica"
 
-#define LINE_LONG_SIZE_CHAR 128
-#define LINE_XLONG_SIZE_CHAR 164
-#define LINE_SHORT_SIZE_CHAR 64
-
-#define LIMIT_FORMAL_AGE 30
-
-#define MATH_ANSWER_CHEAT 91823
-#define MATH_ANSWER_FLOAT_LIMIT 0.1
-
-#define DATE_NORM_YEAR \
-    1876  // Calculations will be normalized to saturday, Januari 1th 1876.
-          // Oldest person alive.
-          // 1876 is a schrikkeljaar
-#define DAYS_IN_YEAR 365
-
-typedef char line_short_t[LINE_SHORT_SIZE_CHAR];
-typedef char line_xlong_t[LINE_XLONG_SIZE_CHAR];
+const int MATH_ANSWER_CHEAT = 91823;  // For testing purposes.
+const float MATH_ANSWER_FLOAT_LIMIT = 0.1;
+const int DATE_NORM_YEAR = 1876;  // Calculations will be normalized to saturday, Januari 1th 1876.
+                                  // Oldest person alive.
+                                  // 1876 is a schrikkeljaar
+const int DAYS_IN_YEAR = 365;
+const int LIMIT_FORMAL_AGE = 30;
 
 /* A struct that defines a variable question inlcuding answer asked to the user. */
 typedef struct QUESTION_ITEM {
-    line_xlong_t question;
-    line_short_t choice_1;
-    line_short_t choice_2;
-    line_short_t choice_3;
-    line_short_t choice_4;
+    char question[164];
+    char choice_1[128];
+    char choice_2[128];
+    char choice_3[128];
+    char choice_4[128];
     char answer;
 } question_item_t;
 
@@ -52,21 +40,21 @@ typedef enum DAY {
 
 /* A struct that defines all variable prompts asked to the user. */
 typedef struct prompt_list_t {
-    line_xlong_t year;
-    line_xlong_t month;
-    line_xlong_t day;
-    line_xlong_t day_str;
-    line_xlong_t math;
-    line_xlong_t math_teller;
-    line_xlong_t math_noemer;
-    line_xlong_t math_float;
-    line_xlong_t math_fault;
-    line_xlong_t question;
-    line_xlong_t question_fault;
-    line_xlong_t ok_exact;
-    line_xlong_t ok_beta;
-    line_xlong_t done;
-    line_xlong_t err_invalid;
+    char year[164];
+    char month[164];
+    char day[164];
+    char day_str[164];
+    char math[164];
+    char math_teller[164];
+    char math_noemer[164];
+    char math_float[164];
+    char math_fault[164];
+    char question[164];
+    char question_fault[164];
+    char ok_exact[164];
+    char ok_beta[164];
+    char done[164];
+    char err_invalid[164];
 } prompt_list_t;
 
 /* Informal question. */
@@ -76,8 +64,7 @@ const question_item_t question_item_informal = {
     .choice_2 = "b. De Gebroeders Karamazov van Fjodor Dostojevski",
     .choice_3 = "c. Odyssee van Homerus",
     .choice_4 = "d. De Toverberg van Thomas Mann",
-    .answer = 'b',
-};
+    .answer = 'b'};
 
 /* Formal question. */
 const question_item_t question_item_formal = {
@@ -88,8 +75,7 @@ const question_item_t question_item_formal = {
     .choice_2 = "b. Albert Camus",
     .choice_3 = "c. Marcel Proust",
     .choice_4 = "d. Andre Gide",
-    .answer = 'b',
-};
+    .answer = 'b'};
 
 /* Informal prompts. */
 const prompt_list_t prompt_list_informal = {
@@ -132,38 +118,32 @@ const prompt_list_t prompt_list_formal = {
 /* Amount of days per month from jan till dec.*/
 const uint8_t day_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 /* A list of weekdays, normalized to DATE_NORM_YEAR. 1/1/1876 is a saterday.*/
-const date_day_e day_list[] = {
-    DATE_DAY_SATERDAY,  DATE_DAY_SUNDAY,   DATE_DAY_MONDAY, DATE_DAY_TUESDAY,
-    DATE_DAY_WEDNESDAY, DATE_DAY_THURSDAY, DATE_DAY_FRIDAY,
-};
+const date_day_e day_list[] = {DATE_DAY_SATERDAY, DATE_DAY_SUNDAY,    DATE_DAY_MONDAY,
+                               DATE_DAY_TUESDAY,  DATE_DAY_WEDNESDAY, DATE_DAY_THURSDAY,
+                               DATE_DAY_FRIDAY};
 
 int main(int argc, char **argv) {
     time_t time_now = time(NULL);
     struct tm *time_holder = {0};
-    time_t time_converted;
-
+    time_t time_converted = {0};
     int input_int = 0;
     float input_float = 0;
     char input_char = 0;
-
     int birth_year = 0;
     int birth_month = 0;
     int birth_day = 0;
-
-    char math_sign;
-    int math_1_teller;
-    int math_1_noemer;
-    int math_2_teller;
-    int math_2_noemer;
-    int math_answer_teller;
-    int math_answer_noemer;
-    float math_answer_float;
-
+    char math_sign = '-';
+    int math_1_teller = 0;
+    int math_1_noemer = 0;
+    int math_2_teller = 0;
+    int math_2_noemer = 0;
+    int math_answer_teller = 0;
+    int math_answer_noemer = 0;
+    float math_answer_float = 0;
     int num_leap_days = 0;
     int num_days_from_mon = 0;
     int num_days_total = 0;
     date_day_e day_str = DATE_DAY_MONDAY;
-
     const prompt_list_t *prompt_list = &prompt_list_formal;
     const question_item_t *question_item = &question_item_formal;
 
@@ -171,17 +151,16 @@ int main(int argc, char **argv) {
     srand(time(NULL));
 
     // Infoblock
-    cout << "Naam:\t\t\t" << STUDENT_NAME << "\n";
-    cout << "Student nummer:\t\t" << STUDENT_NUMBER << "\n";
-    cout << "Laatst geupdate:\t" << DATE_UPDATED << "\n";
-    cout << "Opdracht:\t\t" << OPDRACHT << "\n";
-    cout << "Studie:\t\t\t" << STUDIE << "\n";
-    cout << "\n";
-    cout << "> Vragenlijst: Ben jij geschikt voor een studie aan de universiteit?\n";
+    std::cout << "Naam:\t\t\t" << STUDENT_NAME << "\n";
+    std::cout << "Student nummer:\t\t" << STUDENT_NUMBER << "\n";
+    std::cout << "Laatst geupdate:\t" << DATE_UPDATED << "\n";
+    std::cout << "Opdracht:\t\t" << OPDRACHT << "\n";
+    std::cout << "Studie:\t\t\t" << STUDIE << "\n\n";
+    std::cout << "> Vragenlijst: Ben jij geschikt voor een studie aan de universiteit?\n";
 
     // Ask for age.
-    cout << prompt_list->year << "\n";
-    cin >> input_int;
+    std::cout << prompt_list->year << "\n";
+    std::cin >> input_int;
     if (!input_int) {
         goto end_err_invalid;
     }
@@ -192,8 +171,8 @@ int main(int argc, char **argv) {
         goto end_err_young;
     }
 
-    cout << prompt_list->month << "\n";
-    cin >> input_int;
+    std::cout << prompt_list->month << "\n";
+    std::cin >> input_int;
     if (!input_int || (1 < input_int && input_int > 12)) {
         goto end_err_invalid;
     }
@@ -204,8 +183,8 @@ int main(int argc, char **argv) {
         goto end_err_young;
     }
 
-    cout << prompt_list->day << "\n";
-    cin >> input_int;
+    std::cout << prompt_list->day << "\n";
+    std::cin >> input_int;
     if (!input_int || !(1 <= input_int && input_int <= 31)) {
         goto end_err_invalid;
     }
@@ -238,29 +217,22 @@ int main(int argc, char **argv) {
     day_str = day_list[num_days_total % 7];
 
     // Ask for day of the birthday and test correctness.
-    cout << prompt_list->day_str << "\n";
-    cin >> input_char;
+    std::cout << prompt_list->day_str << "\n";
+    std::cin >> input_char;
     if (!input_char) {
         goto end_err_invalid;
     }
     switch (input_char) {  // eww
         case 'z':
-            cout << "> Welke dag:  za(a) of zo(o))?\n";
-            cin >> input_char;
-            if (!input_char) {
+            std::cout << "> Welke dag:  za(a) of zo(o))?\n";
+            std::cin >> input_char;
+            if (!input_char || (input_char != 'a' && input_char != 'o')) {
                 goto end_err_invalid;
             }
-            switch (input_char) {
-                case 'a':
-                    if (day_str != DATE_DAY_SATERDAY) {
-                        goto end_err_day_str;
-                    }
-                    break;
-                case 'o':
-                    if (day_str != DATE_DAY_SUNDAY) {
-                        goto end_err_day_str;
-                    }
-                    break;
+            if (input_char == 'a' && day_str != DATE_DAY_SATERDAY) {
+                goto end_err_day_str;
+            } else if (input_char == 'o' && day_str != DATE_DAY_SUNDAY) {
+                goto end_err_day_str;
             }
             break;
         case 'm':
@@ -269,22 +241,15 @@ int main(int argc, char **argv) {
             }
             break;
         case 'd':
-            cout << "> Welke dag: di(i) of do(o))?\n";
-            cin >> input_char;
-            if (!input_char) {
+            std::cout << "> Welke dag: di(i) of do(o))?\n";
+            std::cin >> input_char;
+            if (!input_char || (input_char != 'i' && input_char != 'o')) {
                 goto end_err_invalid;
             }
-            switch (input_char) {
-                case 'i':
-                    if (day_str != DATE_DAY_TUESDAY) {
-                        goto end_err_day_str;
-                    }
-                    break;
-                case 'o':
-                    if (day_str != DATE_DAY_THURSDAY) {
-                        goto end_err_day_str;
-                    }
-                    break;
+            if (input_char == 'i' && day_str != DATE_DAY_TUESDAY) {
+                goto end_err_day_str;
+            } else if (input_char == 'o' && day_str != DATE_DAY_THURSDAY) {
+                goto end_err_day_str;
             }
             break;
         case 'w':
@@ -318,69 +283,70 @@ int main(int argc, char **argv) {
     math_answer_float = (float)math_answer_teller / (float)math_answer_noemer;
 
     // Ask math question.
-    cout << prompt_list->math;
-    cout << math_1_teller << "/" << math_1_noemer << " " << math_sign << " " << math_2_teller << "/"
-         << math_2_noemer << " = ?\n";
-    cout << prompt_list->math_teller << "\n";
-    cin >> input_int;
+    std::cout << prompt_list->math;
+    std::cout << math_1_teller << "/" << math_1_noemer << " " << math_sign << " " << math_2_teller
+              << "/" << math_2_noemer << " = ?\n";
+    std::cout << prompt_list->math_teller << "\n";
+    std::cin >> input_int;
     if (input_int != MATH_ANSWER_CHEAT && input_int != math_answer_teller) {
         goto end_math_fault;
     }
 
-    cout << prompt_list->math_noemer << "\n";
-    cin >> input_int;
+    std::cout << prompt_list->math_noemer << "\n";
+    std::cin >> input_int;
     if (input_int != MATH_ANSWER_CHEAT && input_int != math_answer_noemer) {
         goto end_math_fault;
     }
 
-    cout << prompt_list->math_float << "\n";
-    cin >> input_float;
+    std::cout << prompt_list->math_float << "\n";
+    std::cin >> input_float;
     if (input_float != MATH_ANSWER_CHEAT &&
         ((math_answer_float - MATH_ANSWER_FLOAT_LIMIT) > input_float ||
          input_float > (math_answer_float + MATH_ANSWER_FLOAT_LIMIT))) {
         goto end_math_fault;
     }
 
-    cout << prompt_list->ok_exact << "\n";
+    std::cout << prompt_list->ok_exact << "\n";
     goto end;
 
 end_math_fault:
-    cout << prompt_list->math_fault << "\n";
+    std::cout << prompt_list->math_fault << "\n";
 
     // Ask beta question.
-    cout << question_item->question << "\n";
-    cout << "\t" << question_item->choice_1 << "\n";
-    cout << "\t" << question_item->choice_2 << "\n";
-    cout << "\t" << question_item->choice_3 << "\n";
-    cout << "\t" << question_item->choice_4 << "\n";
-    cout << prompt_list->question << "\n";
+    std::cout << question_item->question << "\n";
+    std::cout << "\t" << question_item->choice_1 << "\n";
+    std::cout << "\t" << question_item->choice_2 << "\n";
+    std::cout << "\t" << question_item->choice_3 << "\n";
+    std::cout << "\t" << question_item->choice_4 << "\n";
+    std::cout << prompt_list->question << "\n";
 
-    cin >> input_char;
-    if (!input_char) {
+    std::cin >> input_char;
+    if (!input_char ||
+        (input_char != 'a' && input_char != 'b' && input_char != 'c' && input_char != 'd')) {
         goto end_err_invalid;
     }
     if ((input_char | 0x20) != question_item->answer) {
-        cout << prompt_list->question_fault;
-        cout << " Het juiste antwoord was " << question_item->answer << ".\n";
+        std::cout << prompt_list->question_fault;
+        std::cout << " Het juiste antwoord was " << question_item->answer << ".\n";
     } else {
-        cout << prompt_list->ok_beta << "\n";
+        std::cout << prompt_list->ok_beta << "\n";
     }
 
     goto end;
 
 end_err_young:
-    cout << "! Je bent te jong om deze vragenlijst in te vullen.\n";
+    std::cout << "! Je bent te jong om deze vragenlijst in te vullen.\n";
     return 1;
 
 end_err_day_str:
-    cout << "! De opgegeven dag is niet valide, gegevens verwijderd!\n";
+    std::cout << "! De opgegeven dag is niet valide, gegevens verwijderd!\n";
     return 1;
 
 end_err_invalid:
-    cout << "! De gegeven informatie is niet valide, probeer het opnieuw.\n";
+    std::cout << "! De gegeven informatie is niet valide, probeer het opnieuw.\n";
     return 1;
 
 end:
-    cout << prompt_list->done << "\n";
+    std::cout << prompt_list->done << "\n";
     return 0;
 }
