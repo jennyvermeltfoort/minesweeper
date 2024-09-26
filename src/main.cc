@@ -123,6 +123,8 @@ char fs_consume_integers(std::fstream &fs) {
     return c;
 }
 
+/* Removes comments and white lines. Reproduces indentation.
+ */
 errno_e fs_format(std::fstream &in, std::fstream &out,
                   uint8_t tab_size) {
     char c = in.get();
