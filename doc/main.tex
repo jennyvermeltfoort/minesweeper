@@ -50,31 +50,36 @@ format per vraag. De source code is te vinden in paragraaf \hyperref[sec:code]{p
 code is getest met de test beschreven in \hyperref[sec:test]{paragraaf \ref{sec:test}}, zie subparagraaf
 \hyperref[sec:resultaat]{paragraaf \ref{sec:resultaat}} voor de
 resultaten.
+
 \section{Eisen}
 De applicatie voldoet aan de volgende eisen:
 \begin{enumerate}
-    \item De applicatie neemt een ingangsprogramma en produceerd een uitgangsprogramma. Het uitgangsprogramma is een
-          getransformeerde ingangsprogramma.
-    \item De applicatie verwijderd al het \"//\" commentaar van het ingangsprogramma.
-    \item De applicatie formateerd het ingangsprogramma zodat de inspring per regel in het geheel exact is. Met een
-          argument wordt aangegeven hoeveel spaties \'e\'en insprong is.
-    \item De applicatie berekend hoevaak een met een argument ingegeven combinatie van letters voorkomt in het
-          ingangsprogramma. Inclusief commentaar, hoofdlettergebruik wordt genegeerd, \"abc\" is dus gelijk aan
-          \"ABC\".
-    \item De applicatie bepaald voor elk getal groter dan nul in het ingangsprogramma een Lychrel-getal is. Verificatie
-          wordt tot INT\_MAX uitgevoerd. In de CLI wordt het Lychrel-getal afgedrukt en het aantal iteraties
-          noodzakelijk om het
-          palinroom te behalen. Bij INT\_MAX iteraties of meer wordt gemeld dat de applicatie het niet weet voor dit
-          getal. Getallen binnen commentaar worden genegeerd. Enkel invoergetallen tussen 1 en INT\_MAX voldoen.
-    \item De applicatie verwacht met een argument de locatie van het ingangsprogramma. Wanneer het ingangsprogramma
-          niet bestaat stopt het programma.
-    \item De applicatie mag enkel het ingangsprogramma lezen.
-    \item De applicatie verwacht een foutloos C++ programma. I.e. het ingangsprogramma moet te compileren zijn met een
-          g++ compiler.
-    \item De applicatie controleert niet of het ingangsprogramma foutloos is.
-    \item De applicatie verwacht met een argument de locatie van het uitgangsprogramma. Wanneer het uitgangsprogramma
-          niet bestaat wordt het aangemaakt, wanneer het wel bestaat wordt het overschreven.
-    \item
+      \item De applicatie neemt een ingangsprogramma en produceerd een uitgangsprogramma. Het uitgangsprogramma is een
+            getransformeerde ingangsprogramma.
+      \item De applicatie verwijderd al het \"//\" commentaar van het ingangsprogramma.
+      \item De applicatie formateerd het ingangsprogramma zodat de inspring per regel in het geheel exact is. Met een
+            argument wordt aangegeven hoeveel spaties \'e\'en insprong is.
+      \item De applicatie controleert of het aantal open accolades gelijk is aan het aantal gesloten accolades.
+      \item De applicatie berekend hoevaak een met een argument ingegeven combinatie van letters voorkomt in het
+            ingangsprogramma. Inclusief commentaar, hoofdlettergebruik wordt genegeerd, \"abc\" is dus gelijk aan
+            \"ABC\".
+      \item De applicatie bepaald voor elk getal groter dan nul in het ingangsprogramma of het een Lychrel-getal is. Verificatie
+            wordt tot INT\_MAX uitgevoerd. In het CLI-interface wordt het Lychrel-getal afgedrukt en het aantal iteraties
+            noodzakelijk om het palinroom te behalen. Bij INT\_MAX iteraties of meer wordt gemeld dat de applicatie het niet weet voor dit
+            getal. Getallen binnen commentaar worden genegeerd. Enkel invoergetallen tussen 1 en INT\_MAX voldoen.
+      \item De applicatie verwacht met een argument de locatie van het ingangsprogramma. Wanneer het ingangsprogramma
+            niet bestaat stopt het programma.
+      \item De applicatie mag enkel het ingangsprogramma lezen.
+      \item De applicatie verwacht een foutloos C++ programma. I.e. het ingangsprogramma moet te compileren zijn met een
+            g++ compiler.
+      \item De applicatie controleert niet of het ingangsprogramma foutloos is.
+      \item De applicatie verwacht met een argument de locatie van het uitgangsprogramma. Wanneer het uitgangsprogramma
+            niet bestaat wordt het aangemaakt, wanneer het wel bestaat wordt het overschreven.
+      \item De applicatie print aan het eind van het programma het volgende in het CLI-interface: 
+      \begin{enumerate}
+            \item Het aantal optreden van de ingevoerde letters. 
+            \item Het resultaat van het accolade verificatie algoritme. 
+      \end{enumerate}
 \end{enumerate}
 
 \section{Tijd}
