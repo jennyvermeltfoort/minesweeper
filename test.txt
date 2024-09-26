@@ -1,25 +1,11 @@
-{
-
-
-abc
-
-{
-  {
-    {
-      {
-        {{{{{}}}}}
-      }
+#include <iostream>
+int main() {
+    int a = 5;
+    if (a == 5) { // Begin van if
+       std::cout << "A is 5" << std::endl;
     }
-  }
+    else {
+        std::cout << "A is not 5" << std::endl;  // Uitleiding van else
 }
-
-abcasdf
-
-
-
-
-
-
-
-
+    return 0;
 }
