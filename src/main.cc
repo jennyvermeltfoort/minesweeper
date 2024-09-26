@@ -164,11 +164,12 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
     }
 
     if (indent != 0) {
-        std::cout << "> An accolade inbalance was found: '" << indent
-                  << "' instance(s) of unresolved accolades. Positve "
-                     "means too many open accolades, negative means "
-                     "too many closed accolades."
-                  << std::endl;
+        std::cout
+            << "> An accolade inbalance was found: '" << indent
+            << "' instance(s) of unresolved accolades. Positive "
+               "means too many open accolades, negative means "
+               "too many closed accolades."
+            << std::endl;
         return ERRNO_ERR;
     }
 

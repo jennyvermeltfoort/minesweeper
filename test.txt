@@ -4,7 +4,7 @@ int main() {
     if (a == 5) { // Begin van if
        std::cout << "A is 5" << std::endl;
     }
-    else {
+    else 
         std::cout << "A is not 5" << std::endl;  // Uitleiding van else
 }
     return 0;
