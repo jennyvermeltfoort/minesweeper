@@ -20,6 +20,8 @@ const uint8_t MAX_TAB_SIZE = 8;
 const uint8_t ANSCII_NUMBER_MASK = 0XF;
 const uint8_t ANSCII_NUMBER_0 = 48;
 const uint8_t ANSCII_NUMBER_9 = 57;
+const uint8_t ANSCII_LETTER_A = 97;
+const uint8_t ANSCII_LETTER_Z = 122;
 
 typedef enum ERRNO {
     ERRNO_OK = 0,
@@ -54,6 +56,9 @@ char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic) {
 }
 inline bool anscii_is_int(char c) {
     return (c >= ANSCII_NUMBER_0 && c <= ANSCII_NUMBER_9);
+}
+inline bool anscii_is_letter(char c) {
+    return (c >= ANSCII_LETTER_A && ANSCII_LETTER_Z <= 122);
 }
 inline bool anscii_is_whitespace(char c) {
     return (c == ' ' || c == '\t');
@@ -94,19 +99,19 @@ errno_e parser_letters(char *cbuf, letter_buf_t out) {
         if (i >= LETTERS_SIZE) {
             std::cout << "Too many letters provided." << std::endl;
             return ERRNO_ERR;
-        }
-        out[i] = cbuf[i] | 0x20;
-        if (out[i] < 97 || out[i] > 122) {
+        } else if (!anscii_is_letter(cbuf[i] | 0x20)) {
             std::cout
                 << "Only letters may be provided. Provided was: "
                 << out[i] << std::endl;
             return ERRNO_ERR;
         }
+        out[i] = cbuf[i] | 0x20;
         i++;
     } while (cbuf[i] != '\0');
 
     if (i != LETTERS_SIZE) {
-        std::cout << "Not enough letters provided." << std::endl;
+        std::cout << "Not enough letters provided, required 3." << std::endl;
+        return ERRNO_ERR;
     }
 
     return ERRNO_OK;
