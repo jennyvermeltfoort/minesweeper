@@ -1,0 +1,6 @@
+$ ./main.o -h
+-i <path> //path for input file.
+-o <path> //path for output file.
+-l <string> //search for letters in input file, exactly 3 letters, no spaces, only letters.
+-t <int> //lenght of tabs. Max length = 8
+main.o -i <path> -o <path> -l <string> -t <int>.

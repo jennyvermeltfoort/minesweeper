@@ -8,18 +8,18 @@
  * using the Lychrel algoritme.
  *
  * Author: Jenny Vermeltfoort (j.vermeltfoort@umail.leidenuniv.nl)
- * Date: 9-22-2024
+ * Date: 9-27-2024
  */
 
 #include <fstream>
 #include <iostream>
 
-#define LETTERS_SIZE 3U
-#define EXPECTED_QUANTITY_ARGUMENTS 6U
-#define MAX_TAB_SIZE 8U
-#define ANSCII_NUMBER_MASK 0XF
-#define ANSCII_NUMBER_0 48
-#define ANSCII_NUMBER_9 57
+const uint8_t LETTERS_SIZE = 3;
+const uint8_t EXPECTED_QUANTITY_ARGUMENTS = 6;
+const uint8_t MAX_TAB_SIZE = 8;
+const uint8_t ANSCII_NUMBER_MASK = 0XF;
+const uint8_t ANSCII_NUMBER_0 = 48;
+const uint8_t ANSCII_NUMBER_9 = 57;
 
 typedef enum ERRNO {
     ERRNO_OK = 0,
@@ -42,9 +42,27 @@ typedef enum LYCHREL_NUMBER {
 
 typedef char letter_buf_t[LETTERS_SIZE];
 
-/* Tests whether input character is a ANSCII number.*/
+/* Consume till logic, consumes all characters in file till 
+ * eof or until the function callback returns false. */
+typedef bool (*consume_logic_t)(char c);
+char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic)
+{
+    char c = 0;
+    do {
+        c = fs.get();
+    } while (!fs.eof() && logic(c));
+    return c;
+}
 inline bool anscii_is_int(char c) {
     return (c >= ANSCII_NUMBER_0 && c <= ANSCII_NUMBER_9);
+}
+inline bool anscii_is_whitespace(char c)
+{
+    return (c == ' ' || c == '\t');
+}
+inline bool anscii_is_not_newline(char c)
+{
+    return (c != '\n');
 }
 
 inline void cli_print_help(void) {
@@ -100,27 +118,30 @@ errno_e parser_letters(char *cbuf, letter_buf_t out) {
     return ERRNO_OK;
 }
 
-char fs_consume_till_character(std::fstream &fs, char character) {
-    while (!fs.eof() && fs.get() != character)
-        ;
-    return character;
-}
+/* Decide whether the number is a Lychrel number using the Lychrel
+ * algoritme. A number is considered a Lychrel number when sum of the
+ * number and its reverse exceed UINT32_MAX.
+ */
+lychrel_number_e lychrel_is_number(uint32_t number,
+                                   uint8_t &iteration) {
+    uint32_t storage = number;
+    uint32_t reverse = 0;
 
-char fs_consume_tabs_and_spaces(std::fstream &fs) {
-    char c = 0;
     do {
-        c = fs.get();
-    } while (!fs.eof() && (c == ' ' || c == '\t'));
+        reverse = reverse * 10 + (storage % 10);
+        storage /= 10;
+    } while (storage != 0);
 
-    return c;
-}
+    if (reverse == number && iteration == 0) {
+        return LYCHREL_NUMBER_OK;
+    } else if (reverse == number) {
+        return LYCHREL_NUMBER_DELAYED;
+    } else if ((UINT32_MAX - number) < reverse) {
+        return LYCHREL_NUMBER_NONE;
+    }
 
-char fs_consume_integers(std::fstream &fs) {
-    char c = 0;
-    do {
-        c = fs.get();
-    } while (!fs.eof() && anscii_is_int(c));
-    return c;
+    iteration++;
+    return lychrel_is_number(number + reverse, iteration);
 }
 
 /* Removes comments and white lines. Reproduces indentation.
@@ -134,11 +155,11 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
 
     while (!in.eof()) {
         if (p == '\n' && (c == ' ' || c == '\t')) {
-            c = fs_consume_tabs_and_spaces(in);
+            c = fs_consume_till_logic(in, anscii_is_whitespace);
         }
 
         if (c == '/' && in.peek() == '/') {
-            c = fs_consume_till_character(in, '\n');
+            c = fs_consume_till_logic(in, anscii_is_not_newline);
         }
 
         if (c == '}') {
@@ -191,32 +212,6 @@ uint16_t fs_count_letters(std::fstream &fs, letter_buf_t cbuf) {
     return counter;
 }
 
-/* Decide whether the number is a Lychrel number using the Lychrel
- * algoritme. A number is considered a Lychrel number when sum of the
- * number and its reverse exceed UINT32_MAX.
- */
-lychrel_number_e lychrel_is_number(uint32_t number,
-                                   uint8_t &iteration) {
-    uint32_t storage = number;
-    uint32_t reverse = 0;
-
-    do {
-        reverse = reverse * 10 + (storage % 10);
-        storage /= 10;
-    } while (storage != 0);
-
-    if (reverse == number && iteration == 0) {
-        return LYCHREL_NUMBER_OK;
-    } else if (reverse == number) {
-        return LYCHREL_NUMBER_DELAYED;
-    } else if ((UINT32_MAX - number) < reverse) {
-        return LYCHREL_NUMBER_NONE;
-    }
-
-    iteration++;
-    return lychrel_is_number(number + reverse, iteration);
-}
-
 /* Parses all numbers in a filestream and verifies whether they are
  * lychrel numbers. Prints the results in the CLI. Numbers in the file
  * can't exceed UINT32_MAX.
@@ -229,11 +224,11 @@ void fs_find_lychrel(std::fstream &fs) {
 
     do {
         c = fs.get();
-        if ((UINT32_MAX - (number * 10)) < 10 && anscii_is_int(c)) {
+        if (anscii_is_int(c) && (number * 10) < number) {
             std::cout << "Skipped the number starting with '"
                       << +number << "', it is too big to parse."
                       << std::endl;
-            c = fs_consume_integers(fs);
+            c = fs_consume_till_logic(fs, anscii_is_int);
             number = 0;
         }
 
@@ -270,7 +265,7 @@ void fs_find_lychrel(std::fstream &fs) {
     } while (!fs.eof());
 }
 
-void fs_to_start(std::fstream &fs) {
+inline void fs_to_start(std::fstream &fs) {
     fs.clear();
     fs.flush();
     fs.sync();
@@ -317,15 +312,13 @@ int main(int argc, char *argv[]) {
         return ERRNO_ERR;
     }
 
+    fs_to_start(fs_input_file);
     fs_output_file.close();
     if (parser_open_file_stream(fs_output_file,
                                 argv[ARG_POS_OUTPUT + 1],
                                 std::fstream::in) != ERRNO_OK) {
         return ERRNO_ERR;
     }
-
-    fs_to_start(fs_output_file);
-    fs_to_start(fs_input_file);
 
     std::cout << "> Searching the letter combination: '"
               << input_letters << "'." << std::endl;
@@ -340,6 +333,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::endl;
     std::cout << "> File format done." << std::endl;
+    
     fs_input_file.close();
     fs_output_file.close();
 
