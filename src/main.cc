@@ -78,6 +78,16 @@ inline void cli_print_help(void) {
               << std::endl;
 };
 
+inline uint32_t number_reverse(uint32_t number)
+{
+    uint32_t reverse = 0;
+    do {
+        reverse = reverse * 10 + (number % 10);
+        number /= 10;
+    } while (number != 0);
+    return reverse;
+}
+
 inline errno_e parser_open_file_stream(std::fstream &fs, char *cbuf,
                                        std::ios_base::openmode mode) {
     fs.open(cbuf, mode);
@@ -121,15 +131,9 @@ errno_e parser_letters(char *cbuf, letter_buf_t out) {
  * algoritme. A number is considered a Lychrel number when sum of the
  * number and its reverse exceed UINT32_MAX.
  */
-lychrel_number_e lychrel_is_number(uint32_t number,
+lychrel_number_e number_is_lychrel(uint32_t number,
                                    uint8_t &iteration) {
-    uint32_t storage = number;
-    uint32_t reverse = 0;
-
-    do {
-        reverse = reverse * 10 + (storage % 10);
-        storage /= 10;
-    } while (storage != 0);
+    uint32_t reverse = number_reverse(number);
 
     if (reverse == number && iteration == 0) {
         return LYCHREL_NUMBER_OK;
@@ -140,7 +144,7 @@ lychrel_number_e lychrel_is_number(uint32_t number,
     }
 
     iteration++;
-    return lychrel_is_number(number + reverse, iteration);
+    return number_is_lychrel(number + reverse, iteration);
 }
 
 /* Removes comments and white lines. Reproduces indentation.
@@ -231,7 +235,7 @@ void fs_find_lychrel(std::fstream &fs) {
             number = number * 10 +
                      static_cast<uint8_t>(c & ANSCII_NUMBER_MASK);
         } else if (number != 0) {
-            rt_val = lychrel_is_number(number, iteration);
+            rt_val = number_is_lychrel(number, iteration);
             if (rt_val == LYCHREL_NUMBER_OK) {
                 std::cout << "Number: '" << +number
                           << "' is a palindroom, thus it is not a "
