@@ -3,7 +3,7 @@
  * The application formats c or c++ source files, removing // prefixed
  * comments and rearranging identation. It verifies whether the input
  * file has a valid accolade balance. Furthermore a by the user
- * provided combination of letters is counted within the input file.
+ * provided combination of letters is counted within the output file.
  * Numbers within the input file are determined to be Lychrel numbers
  * using the Lychrel algoritme.
  *
