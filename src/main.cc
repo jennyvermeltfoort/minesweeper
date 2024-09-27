@@ -42,11 +42,10 @@ typedef enum LYCHREL_NUMBER {
 
 typedef char letter_buf_t[LETTERS_SIZE];
 
-/* Consume till logic, consumes all characters in file till 
+/* Consume till logic, consumes all characters in file till
  * eof or until the function callback returns false. */
 typedef bool (*consume_logic_t)(char c);
-char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic)
-{
+char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic) {
     char c = 0;
     do {
         c = fs.get();
@@ -56,14 +55,10 @@ char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic)
 inline bool anscii_is_int(char c) {
     return (c >= ANSCII_NUMBER_0 && c <= ANSCII_NUMBER_9);
 }
-inline bool anscii_is_whitespace(char c)
-{
+inline bool anscii_is_whitespace(char c) {
     return (c == ' ' || c == '\t');
 }
-inline bool anscii_is_not_newline(char c)
-{
-    return (c != '\n');
-}
+inline bool anscii_is_not_newline(char c) { return (c != '\n'); }
 
 inline void cli_print_help(void) {
     std::cout << "-i <path> //path for input file." << std::endl;
@@ -333,7 +328,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::endl;
     std::cout << "> File format done." << std::endl;
-    
+
     fs_input_file.close();
     fs_output_file.close();
 
