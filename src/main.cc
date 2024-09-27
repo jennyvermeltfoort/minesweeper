@@ -102,7 +102,6 @@ errno_e parser_letters(char *cbuf, letter_buf_t out) {
                 << out[i] << std::endl;
             return ERRNO_ERR;
         }
-
         i++;
     } while (cbuf[i] != '\0');
 
@@ -152,11 +151,9 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
         if (p == '\n' && (c == ' ' || c == '\t')) {
             c = fs_consume_till_logic(in, anscii_is_whitespace);
         }
-
         if (c == '/' && in.peek() == '/') {
             c = fs_consume_till_logic(in, anscii_is_not_newline);
         }
-
         if (c == '}') {
             indent--;
         }
@@ -169,12 +166,10 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
         if (c == '{') {
             indent++;
         }
-
         // remove white lines.
         if (!(c == '\n' && p == '\n')) {
             out.put(c);
         }
-
         p = c;
         c = in.get();
     }
@@ -306,7 +301,6 @@ int main(int argc, char *argv[]) {
     if (rt_val != ERRNO_OK) {
         return ERRNO_ERR;
     }
-
     fs_to_start(fs_input_file);
     fs_output_file.close();
     if (parser_open_file_stream(fs_output_file,
