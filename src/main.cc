@@ -11,6 +11,10 @@
  * Date: 9-27-2024
  */
 
+#include <chrono>
+using namespace std::chrono;
+
+
 #include <fstream>
 #include <iostream>
 
@@ -42,28 +46,29 @@ typedef enum LYCHREL_NUMBER {
     LYCHREL_NUMBER_DELAYED,
 } lychrel_number_e;
 
-typedef char letter_buf_t[LETTERS_SIZE];
+typedef uint8_t letter_buf_t[LETTERS_SIZE];
 
 /* Consume till logic, consumes all characters in file till
  * eof or until the function callback returns false. */
-typedef bool (*consume_logic_t)(char c);
-char fs_consume_till_logic(std::fstream &fs, consume_logic_t logic) {
-    char c = 0;
+typedef bool (*consume_logic_t)(uint8_t c);
+uint8_t fs_consume_till_logic(std::fstream &fs,
+                              consume_logic_t logic) {
+    uint8_t c = 0;
     do {
         c = fs.get();
     } while (!fs.eof() && logic(c));
     return c;
 }
-inline bool anscii_is_int(char c) {
+inline bool anscii_is_int(uint8_t c) {
     return (c >= ANSCII_NUMBER_0 && c <= ANSCII_NUMBER_9);
 }
-inline bool anscii_is_letter(char c) {
+inline bool anscii_is_letter(uint8_t c) {
     return (c >= ANSCII_LETTER_A && ANSCII_LETTER_Z <= 122);
 }
-inline bool anscii_is_whitespace(char c) {
+inline bool anscii_is_whitespace(uint8_t c) {
     return (c == ' ' || c == '\t');
 }
-inline bool anscii_is_not_newline(char c) { return (c != '\n'); }
+inline bool anscii_is_not_newline(uint8_t c) { return (c != '\n'); }
 
 inline void cli_print_help(void) {
     std::cout << "-i <path> //path for input file." << std::endl;
@@ -78,8 +83,7 @@ inline void cli_print_help(void) {
               << std::endl;
 };
 
-inline uint32_t number_reverse(uint32_t number)
-{
+inline uint32_t number_reverse(uint32_t number) {
     uint32_t reverse = 0;
     do {
         reverse = reverse * 10 + (number % 10);
@@ -120,13 +124,13 @@ errno_e parser_letters(char *cbuf, letter_buf_t out) {
     } while (cbuf[i] != '\0');
 
     if (i != LETTERS_SIZE) {
-        std::cout << "Not enough letters provided, required 3." << std::endl;
+        std::cout << "Not enough letters provided, required 3."
+                  << std::endl;
         return ERRNO_ERR;
     }
 
     return ERRNO_OK;
 }
-
 /* Decide whether the number is a Lychrel number using the Lychrel
  * algoritme. A number is considered a Lychrel number when sum of the
  * number and its reverse exceed UINT32_MAX.
@@ -151,8 +155,8 @@ lychrel_number_e number_is_lychrel(uint32_t number,
  */
 errno_e fs_format(std::fstream &in, std::fstream &out,
                   uint8_t tab_size) {
-    char c = in.get();
-    char p = '\n';
+    uint8_t c = in.get();
+    uint8_t p = '\n';
     int16_t indent = 0;
     uint8_t i = 0;
 
@@ -198,14 +202,28 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
 
 /* Counts an exact cbuf combination of letters within the filestream.
  */
-uint16_t fs_count_letters(std::fstream &fs, letter_buf_t cbuf) {
+uint16_t fs_count_letter_combination(std::fstream &fs,
+                                     letter_buf_t cbuf) {
     uint16_t counter = 0;
+    uint8_t letters[LETTERS_SIZE + 1] = {
+        static_cast<uint8_t>(fs.get()),
+        static_cast<uint8_t>(fs.get()),
+        static_cast<uint8_t>(fs.get()), 0};
+    //uint32_t *ptr_letters = reinterpret_cast<uint32_t *>(letters);
+    // for personal amusement, so much faster than indexed array
+    // rotation!
 
     do {
-        if (fs.get() == cbuf[0] && fs.get() == cbuf[1] &&
-            fs.get() == cbuf[2]) {
+        if (letters[0] == cbuf[0] && letters[1] == cbuf[1] &&
+            letters[2] == cbuf[2]) {
             counter++;
         }
+        //*ptr_letters =
+        //    (*ptr_letters >> (sizeof(letters[0]) * 8) & 0XFFFF) +
+        //    ((fs.get() & 0XFF) << sizeof(letters[0]) * 8 * 2);
+        letters[0] = letters[1];
+        letters[1] = letters[2];
+        letters[2] = fs.get();
     } while (!fs.eof());
 
     return counter;
@@ -219,7 +237,7 @@ void fs_find_lychrel(std::fstream &fs) {
     lychrel_number_e rt_val = LYCHREL_NUMBER_NONE;
     uint32_t number = 0;
     uint8_t iteration = 0;
-    char c = 0;
+    uint8_t c = 0;
 
     do {
         c = fs.get();
@@ -288,15 +306,18 @@ int main(int argc, char *argv[]) {
     if (parser_open_file_stream(fs_input_file,
                                 argv[ARG_POS_INPUT + 1],
                                 std::fstream::in) != ERRNO_OK) {
+        cli_print_help();
         return ERRNO_ERR;
     }
     if (parser_open_file_stream(fs_output_file,
                                 argv[ARG_POS_OUTPUT + 1],
                                 std::fstream::out) != ERRNO_OK) {
+        cli_print_help();
         return ERRNO_ERR;
     }
     if (parser_letters(argv[ARG_POS_LETTER + 1], input_letters) !=
         ERRNO_OK) {
+        cli_print_help();
         return ERRNO_ERR;
     }
     tab_size = static_cast<uint8_t>(argv[ARG_POS_TAB + 1][0] &
@@ -318,12 +339,18 @@ int main(int argc, char *argv[]) {
         return ERRNO_ERR;
     }
 
+    auto start = high_resolution_clock::now();
+
     std::cout << "> Searching the letter combination: '"
               << input_letters << "'." << std::endl;
     std::cout << "Exact letter combination '" << input_letters
               << "' was found '"
-              << +fs_count_letters(fs_input_file, input_letters)
+              << +fs_count_letter_combination(fs_input_file,
+                                              input_letters)
               << "' time(s)." << std::endl;
+auto stop = high_resolution_clock::now();
+auto duration = duration_cast<microseconds>(stop - start);
+std::cout << "duration: " << duration.count() << std::endl;
 
     std::cout << std::endl;
     std::cout << "> Searching for lychrel numbers." << std::endl;

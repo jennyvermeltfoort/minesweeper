@@ -12,6 +12,8 @@ int main() {
 12   // Dit is geen Lychrel-getal, wordt een palindroom na 1 iteratie
 4994 // Dit is een palindroom en geen Lychrel-getal
 
+aabc
+aababcaabbabcabbbcccaaaaabc
 abc // eerste "abc"
 xabcx // tweede "abc"
 ab ab // deze mag niet tellen
