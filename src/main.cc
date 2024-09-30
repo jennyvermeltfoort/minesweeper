@@ -11,10 +11,6 @@
  * Date: 9-27-2024
  */
 
-#include <chrono>
-using namespace std::chrono;
-
-
 #include <fstream>
 #include <iostream>
 
@@ -205,22 +201,16 @@ errno_e fs_format(std::fstream &in, std::fstream &out,
 uint16_t fs_count_letter_combination(std::fstream &fs,
                                      letter_buf_t cbuf) {
     uint16_t counter = 0;
-    uint8_t letters[LETTERS_SIZE + 1] = {
+    uint8_t letters[LETTERS_SIZE] = {
         static_cast<uint8_t>(fs.get()),
         static_cast<uint8_t>(fs.get()),
-        static_cast<uint8_t>(fs.get()), 0};
-    //uint32_t *ptr_letters = reinterpret_cast<uint32_t *>(letters);
-    // for personal amusement, so much faster than indexed array
-    // rotation!
+        static_cast<uint8_t>(fs.get())};
 
     do {
         if (letters[0] == cbuf[0] && letters[1] == cbuf[1] &&
             letters[2] == cbuf[2]) {
             counter++;
         }
-        //*ptr_letters =
-        //    (*ptr_letters >> (sizeof(letters[0]) * 8) & 0XFFFF) +
-        //    ((fs.get() & 0XFF) << sizeof(letters[0]) * 8 * 2);
         letters[0] = letters[1];
         letters[1] = letters[2];
         letters[2] = fs.get();
@@ -339,8 +329,6 @@ int main(int argc, char *argv[]) {
         return ERRNO_ERR;
     }
 
-    auto start = high_resolution_clock::now();
-
     std::cout << "> Searching the letter combination: '"
               << input_letters << "'." << std::endl;
     std::cout << "Exact letter combination '" << input_letters
@@ -348,9 +336,6 @@ int main(int argc, char *argv[]) {
               << +fs_count_letter_combination(fs_input_file,
                                               input_letters)
               << "' time(s)." << std::endl;
-auto stop = high_resolution_clock::now();
-auto duration = duration_cast<microseconds>(stop - start);
-std::cout << "duration: " << duration.count() << std::endl;
 
     std::cout << std::endl;
     std::cout << "> Searching for lychrel numbers." << std::endl;
