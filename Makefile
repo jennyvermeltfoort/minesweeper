@@ -2,10 +2,10 @@
 CC 		= g++
 CFLAGS  = -g -Wall 
 SRC 	= src
-TARGET 	= $(SRC)/main.cc 
+TARGETS	= $(SRC)/main.cc $(SRC)/world.cc $(SRC)/stack.cc
 
-main: $(TARGET)
-	$(CC) $(CFLAGS) -o main.o $(TARGET)
+main: $(TARGETS)
+	$(CC) $(CFLAGS) -I$(SRC) -o main.o $(TARGETS)  
 
 opd: 
 	$(CC) $(CFLAGS) -o po.o opdracht/pointer_opdracht.cc 
@@ -14,4 +14,4 @@ opd:
 all: main
 
 clean:
-	$(RM) $(TARGET)
+	$(RM) $(TARGETS)
