@@ -4,11 +4,11 @@
 #ifndef __GUARD_WORLD_H
 #define __GUARD_WORLD_H
 
-#ifndef __GUARD_STACK_H
-#define __GUARD_STACK_H
-
 typedef struct CELL_T cell_t;
-typedef struct CELL_NEAR_LIST_T {
+
+struct CELL_T {
+    bool is_bomb;
+    int temp;
     cell_t *north_east;
     cell_t *north;
     cell_t *north_west;
@@ -17,11 +17,6 @@ typedef struct CELL_NEAR_LIST_T {
     cell_t *south_east;
     cell_t *south;
     cell_t *south_west;
-} cell_near_list_t;
-struct CELL_T {
-    bool is_bomb;
-    int temp;
-    cell_near_list_t near;
 };
 
 class CellBoard {
@@ -61,8 +56,6 @@ class CellBoard {
 
     void print();
 };
-
-#endif  // __GUARD_STACK_H
 
 class World {
    private:
