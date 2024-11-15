@@ -1,51 +1,168 @@
 #include "world.h"
 
-void CellBoard::add_west(cell_t* initial, int y, int x) {
-    if (x <= 0) {
+void CellBoard::init_middle_cell_west(cell_t* cell) {
+    cell->neighbour.north_west = new cell_t;
+    cell->neighbour.west =
+        cell->neighbour.south->neighbour.north_west;
+    cell->neighbour.south_west =
+        cell->neighbour.south->neighbour.west;
+}
+
+void CellBoard::init_top_cell_west(cell_t* cell) {
+    cell->neighbour.west =
+        cell->neighbour.south->neighbour.north_west;
+    cell->neighbour.south_west =
+        cell->neighbour.south->neighbour.west;
+}
+
+void CellBoard::init_bottom_cell_west(cell_t* cell) {
+    cell->neighbour.north_west = new cell_t;
+}
+
+void CellBoard::init_top_cell_east(cell_t* cell) {
+    cell->neighbour.east =
+        cell->neighbour.south->neighbour.north_east;
+    cell->neighbour.south_east =
+        cell->neighbour.south->neighbour.east;
+}
+
+void CellBoard::init_middle_cell_east(cell_t* cell) {
+    init_cell(cell->neighbour.north_east, cell->neighbour.east);
+    cell->neighbour.east =
+        cell->neighbour.south->neighbour.north_east;
+    cell->neighbour.south_east =
+        cell->neighbour.south->neighbour.east;
+}
+
+void CellBoard::init_bottom_cell_east(cell_t* cell) {
+    init_cell(cell->neighbour.north_east, cell->neighbour.east);
+}
+
+bool CellBoard::is_south_edge(const unsigned int x,
+                              const unsigned int y) {
+    return (y == 0);
+}
+bool CellBoard::is_north_edge(const unsigned int x,
+                              const unsigned int y) {
+    return (y == board_size_y);
+}
+bool CellBoard::is_west_edge(const unsigned int x,
+                             const unsigned int y) {
+    return (x == 0);
+}
+bool CellBoard::is_east_edge(const unsigned int x,
+                             const unsigned int y) {
+    return (x == board_size_x);
+}
+bool CellBoard::is_south_east_corner(const unsigned int x,
+                                     const unsigned int y) {
+    return is_south_edge(x, y) && is_east_edge(x, y);
+}
+bool CellBoard::is_north_east_corner(const unsigned int x,
+                                     const unsigned int y) {
+    return is_north_edge(x, y) && is_east_edge(x, y);
+}
+bool CellBoard::is_south_west_corner(const unsigned int x,
+                                     const unsigned int y) {
+    return is_south_edge(x, y) && is_west_edge(x, y);
+}
+bool CellBoard::is_north_west_corner(const unsigned int x,
+                                     const unsigned int y) {
+    return is_north_edge(x, y) && is_west_edge(x, y);
+}
+
+void CellBoard::init_cell_north(cell_t** cell) {
+    init_cell_top(&(*cell)->neighbour.north, *cell);
+}
+
+void CellBoard::init_cell_east(cell_t** cell) {
+    (*cell)->neighbour.east = new cell_t;
+    (*cell)->neighbour.east->neighbour.west = *cell;
+    init_cell_top(&(*cell)->neighbour.north_east,
+                  (*cell)->neighbour.east);
+    (*cell)->neighbour.north_east =
+        (*cell)->neighbour.east->neighbour.north;
+    (*cell)->neighbour.south_east =
+        (*cell)->neighbour.east->neighbour.south;
+}
+
+void CellBoard::init_south_cell_east(cell_t** cell) {
+    (*cell)->neighbour.east = new cell_t;
+    (*cell)->neighbour.east->neighbour.west = *cell;
+    init_cell_top(&(*cell)->neighbour.north_east,
+                  (*cell)->neighbour.east);
+    (*cell)->neighbour.north_east =
+        (*cell)->neighbour.east->neighbour.north;
+}
+
+void CellBoard::init_south_cell_west(cell_t** cell) {
+    (*cell)->neighbour.north_west =
+        (*cell)->neighbour.west->neighbour.north;
+}
+
+void CellBoard::init_north_cell_east(cell_t** cell) {
+    (*cell)->neighbour.east = new cell_t;
+    (*cell)->neighbour.east->neighbour.west = *cell;
+    (*cell)->neighbour.east->neighbour.south_west =
+        (*cell)->neighbour.south;
+}
+
+void CellBoard::init_north_cell_west(cell_t** cell) {
+    (*cell)->neighbour.south_west =
+        (*cell)->neighbour.west->neighbour.south;
+}
+
+void CellBoard::init_cell_top(cell_t** cell, cell_t* cell_south) {
+    static unsigned int x = 0;
+    static unsigned int y = 0;
+
+    if (*cell != nullptr) {
         return;
     }
 
-    initial->neighbour->west = new cell_t;
-    add_north(initial->neighbour->north, y--, x);
-    add_west(initial->neighbour->north, y, x--);
+    *cell = new cell_t;
+    (*cell)->neighbour.south = cell_south;
+
+    if (is_south_west_corner(x, y)) {
+        init_cell_north(cell);
+        init_south_cell_east(cell);
+    } else if (is_south_edge(x, y)) {
+        init_cell_north(cell);
+        init_south_cell_east(cell);
+        init_south_cell_west(cell);
+    } else if (is_south_east_corner(x, y)) {
+        init_south_cell_west(cell);
+    } else if (is_north_west_corner(x, y)) {
+        init_north_cell_east(cell);
+    } else if (is_north_edge(x, y)) {
+        init_north_cell_east(cell);
+        init_north_cell_west(cell);
+    } else if (is_north_east_corner(x, y)) {
+        init_north_cell_west(cell);
+    } else {
+        init_cell_north(cell);
+    }
+
+    // y++;
+    //*cell->neighbour.south = cell_south;
+
+    // if (x > 0 && y < size_y) {
+    //     init_middle_cell_west(cell);
+    // } else if (x > 0 && y >= size_y) {
+    //     init_top_cell_west(cell);
+    // }
+
+    // if (x < size_x && y < size_y) {
+    //     init_middle_cell_east(cell);
+    // } else if (x < size_x && y >= size_y) {
+    //     init_top_cell_east(cell);
+    // }
 }
 
-void CellBoard::add_north(cell_t* initial, int y, int x) {
-    if (y <= 0) {
-        return;
-    }
+void CellBoard::init_board(void) {}
 
-    cell_t* new_cell = new cell_t;
-
-    if (initial->neighbour->north_west != nullptr) {
-        new_cell->neighbour->south_west =
-            initial->neighbour->north_west;
-    }
-
-    if (initial->neighbour->north_east != nullptr) {
-        new_cell->neighbour->south_east =
-            initial->neighbour->north_east;
-    }
-
-    new_cell->neighbour->south = initial;
-    initial->neighbour->north = new_cell;
-    add_north(initial->neighbour->north, y--, x);
-    add_west(initial->neighbour->north, y, x--);
-}
-
-void CellBoard::make_board(int size_x, int size_y) {
-    cell_t cell_x = new cell_t;
-    cell_t cell_y = cell_x;
-
-    for (int y = size_y; y > 0; y--) {
-        for (int x = size_x; x > 0; x--) {
-            cell_x->neighbour->= cell_t;
-        }
-        cell_y->neighbour->north = new cell_t;
-        cell_x = cell_y = cell_y->neighbour->north;
-    }
-}
-
-CellBoard::CellStack(int size_x, int size_y) {
-    initialize_board(size_x, size_y);
+CellBoard::CellBoard(int size_x, int size_y)
+    : board_size_x(size_x), board_size_y(size_y) {
+    start = nullptr;
+    init_cell_top(&start, nullptr);
 }

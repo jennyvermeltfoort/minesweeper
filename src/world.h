@@ -26,7 +26,33 @@ struct CELL_T {
 class CellBoard {
    private:
     cell_t *start;
-    void initialize_board(int size_x, int size_y);
+    const unsigned int board_size_x;
+    const unsigned int board_size_y;
+    void init_cell_top(cell_t **cell, cell_t *cell_south);
+    void init_cell_north(cell_t **cell);
+    void init_south_cell_east(cell_t **cell);
+    void init_south_cell_west(cell_t **cell);
+    void init_north_cell_east(cell_t **cell);
+    void init_north_cell_west(cell_t **cell);
+    void init_board(void);
+    bool is_south_edge(const unsigned int x, const unsigned int y);
+    bool is_north_edge(const unsigned int x, const unsigned int y);
+    bool is_west_edge(const unsigned int x, const unsigned int y);
+    bool is_east_edge(const unsigned int x, const unsigned int y);
+    bool is_south_east_corner(const unsigned int x,
+                              const unsigned int y);
+    bool is_north_east_corner(const unsigned int x,
+                              const unsigned int y);
+    bool is_south_west_corner(const unsigned int x,
+                              const unsigned int y);
+    bool is_north_west_corner(const unsigned int x,
+                              const unsigned int y);
+    void init_middle_cell_west(cell_t *cell);
+    void init_top_cell_west(cell_t *cell);
+    void init_bottom_cell_west(cell_t *cell);
+    void init_top_cell_east(cell_t *cell);
+    void init_middle_cell_east(cell_t *cell);
+    void init_bottom_cell_east(cell_t *cell);
 
    public:
     CellBoard(int size_x, int size_y);
