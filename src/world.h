@@ -8,7 +8,7 @@
 #define __GUARD_STACK_H
 
 typedef struct CELL_T cell_t;
-typedef struct CELL_NEIGHBOUR_LIST_T {
+typedef struct CELL_NEAR_LIST_T {
     cell_t *north_east;
     cell_t *north;
     cell_t *north_west;
@@ -17,10 +17,11 @@ typedef struct CELL_NEIGHBOUR_LIST_T {
     cell_t *south_east;
     cell_t *south;
     cell_t *south_west;
-} cell_neighbour_list_t;
+} cell_near_list_t;
 struct CELL_T {
     bool is_bomb;
-    cell_neighbour_list_t neighbour;
+    int temp;
+    cell_near_list_t near;
 };
 
 class CellBoard {
@@ -28,13 +29,19 @@ class CellBoard {
     cell_t *start;
     const unsigned int board_size_x;
     const unsigned int board_size_y;
-    void init_cell_top(cell_t **cell, cell_t *cell_south);
-    void init_cell_north(cell_t **cell);
-    void init_south_cell_east(cell_t **cell);
-    void init_south_cell_west(cell_t **cell);
-    void init_north_cell_east(cell_t **cell);
-    void init_north_cell_west(cell_t **cell);
-    void init_board(void);
+    cell_t *init_cell(cell_t *cell_south, const unsigned int x,
+                      const unsigned int y);
+    void init_cell_north(cell_t *cell, const unsigned int x,
+                         const unsigned int y);
+    void init_cell_east(cell_t *cell, const unsigned int x,
+                        const unsigned int y);
+    void init_cell_west(cell_t *cell);
+    void init_south_cell_east(cell_t *cell, const unsigned int x,
+                              const unsigned int y);
+    void init_south_cell_west(cell_t *cell);
+    void init_north_cell_east(cell_t *cell, const unsigned int x,
+                              const unsigned int y);
+    void init_north_cell_west(cell_t *cell);
     bool is_south_edge(const unsigned int x, const unsigned int y);
     bool is_north_edge(const unsigned int x, const unsigned int y);
     bool is_west_edge(const unsigned int x, const unsigned int y);
@@ -47,16 +54,12 @@ class CellBoard {
                               const unsigned int y);
     bool is_north_west_corner(const unsigned int x,
                               const unsigned int y);
-    void init_middle_cell_west(cell_t *cell);
-    void init_top_cell_west(cell_t *cell);
-    void init_bottom_cell_west(cell_t *cell);
-    void init_top_cell_east(cell_t *cell);
-    void init_middle_cell_east(cell_t *cell);
-    void init_bottom_cell_east(cell_t *cell);
 
    public:
-    CellBoard(int size_x, int size_y);
+    CellBoard(const unsigned int size_x, const unsigned int size_y);
     ~CellBoard(void);
+
+    void print();
 };
 
 #endif  // __GUARD_STACK_H
