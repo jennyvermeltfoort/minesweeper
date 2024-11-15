@@ -24,30 +24,17 @@ class CellBoard {
     cell_t *start;
     const unsigned int board_size_x;
     const unsigned int board_size_y;
-    cell_t *init_cell(cell_t *cell_south, const unsigned int x,
-                      const unsigned int y);
-    void init_cell_north(cell_t *cell, const unsigned int x,
-                         const unsigned int y);
-    void init_cell_east(cell_t *cell, const unsigned int x,
-                        const unsigned int y);
-    void init_cell_west(cell_t *cell);
-    void init_south_cell_east(cell_t *cell, const unsigned int x,
-                              const unsigned int y);
-    void init_south_cell_west(cell_t *cell);
-    void init_north_cell_east(cell_t *cell, const unsigned int x,
-                              const unsigned int y);
-    void init_north_cell_west(cell_t *cell);
+    cell_t *init_cell_east(cell_t *cell, const unsigned int x,
+                           const unsigned int y);
+    cell_t *init_cell_south(cell_t *cell, const unsigned int x,
+                            const unsigned int y);
+    cell_t *init_cell_south_east(cell_t *cell, const unsigned int x,
+                                 const unsigned int y);
+    void set_cell_east(cell_t *cell);
+    void set_cell_south(cell_t *cell);
     bool is_south_edge(const unsigned int x, const unsigned int y);
-    bool is_north_edge(const unsigned int x, const unsigned int y);
-    bool is_west_edge(const unsigned int x, const unsigned int y);
     bool is_east_edge(const unsigned int x, const unsigned int y);
-    bool is_south_east_corner(const unsigned int x,
-                              const unsigned int y);
-    bool is_north_east_corner(const unsigned int x,
-                              const unsigned int y);
     bool is_south_west_corner(const unsigned int x,
-                              const unsigned int y);
-    bool is_north_west_corner(const unsigned int x,
                               const unsigned int y);
 
    public:
