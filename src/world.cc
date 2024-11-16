@@ -27,7 +27,7 @@ void CellBoard::populate_cell_east(cell_t* cell) {
     }
 }
 
-void CellBoard::populate_row_all(cell_t* cell) {
+void CellBoard::recursive_populate_row_all(cell_t* cell) {
     cell_t* cell_west = cell->west;
 
     if (cell_west->north =! nullptr) {
@@ -43,7 +43,7 @@ void CellBoard::populate_row_all(cell_t* cell) {
     }
 
     if (cell->east != nullptr) {
-        populate_row_all(cell->east);
+        recursive_populate_row_all(cell->east);
     }
 }
 
@@ -68,7 +68,7 @@ cell_t* CellBoard::init_grid(void) {
     cell_t* cell_first = cell_y;
     while(y++ < board_size_y) {
         populate_cell_east(cell_first);
-        populate_row_all(cell_first->east);
+        recursive_populate_row_all(cell_first->east);
         cell_first = cell_first->north;
             
     }
