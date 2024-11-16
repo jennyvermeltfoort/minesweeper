@@ -18,37 +18,15 @@ bool CellBoard::is_not_south_west_corner(const unsigned int x,
     return is_not_south_edge(y) && is_not_east_edge(x);
 }
 
-cell_t* CellBoard::init_cell_all_east(cell_t* cell_west,
-                                      const unsigned int x,
-                                      const unsigned int y) {
-    cell_t* cell = nullptr;
-    if (is_not_east_edge(x)) {
-        cell = new cell_t;
-        cell->west = cell_west;
-        cell->east = init_cell_all_east(cell, x + 1, y);
-    }
-    return cell;
-}
-
-cell_t* CellBoard::init_cell_all_south(cell_t* cell_north,
-                                       const unsigned int x,
-                                       const unsigned int y) {
-    cell_t* cell = nullptr;
-    if (is_not_south_edge(y)) {
-        cell = new cell_t;
-        cell->north = cell_north;
-        cell->east = init_cell_all_east(cell, x, y);
-        cell->south = init_cell_all_south(cell, x, y + 1);
-    }
-    return cell;
-}
-
 void CellBoard::populate_all_east(cell_t* cell) {
     cell_t* cell_west = cell->west;
-    cell->north_west = cell_west->north;
-    cell->north = cell_west->north->east;
-    cell->north_east = cell_west->north->east->east;
 
+    if (cell_west->north =! nullptr) {
+        
+       cell->north_west = cell_west->north;
+       cell->north = cell_west->north->east;
+    cell->north_east = cell_west->north->east->east;
+    }
     if (cell->west->south != nullptr) {
         cell->south_west = cell_west->south;
         cell->south = cell_west->south->west;
@@ -60,57 +38,31 @@ void CellBoard::populate_all_east(cell_t* cell) {
     }
 }
 
-void CellBoard::populate_south(cell_t* cell) {
-    cell_t* cell_north = cell->north;
-    cell->north_west = cell_north->west;
-    cell->west = cell_north->south->west;
-    cell->north_east = cell_north->east;
-    cell->east = cell_north->south->east;
-    cell->south_east = cell_north->east->south->south;
-    cell->south_west = cell_north->west->south->south;
-}
-
-void CellBoard::populate_all(cell_t* cell) {
-    populate_all_east(cell);
-
-    if (cell->south != nullptr) {
-        populate_south(cell->south);
-        populate_all(cell->south);
-    }
-}
-
-void CellBoard::populate_north_row(cell_t* cell) {
-    cell_t* cell_west = cell->west;
-    cell->south_west = cell_west->south;
-    cell->south = cell_west->south->east;
-
-    if (cell->east != nullptr) {
-        cell->south_east = cell->south->east;
-        populate_north_row(cell->east);
-    }
-}
-
-void CellBoard::populate_west_column(cell_t* cell) {
-    cell_t* cell_north = cell->north;
-    cell->north_east = cell_north->east;
-
-    if (cell->south != nullptr) {
-        cell->south_east = cell->east->south;
-        populate_west_column(cell->south);
-    }
-}
-
 cell_t* CellBoard::init_raster(void) {
-    cell_t* cell = new cell_t;
+    cell_t* cell_y= new cell_t;
+    unsigned int y = board_size_y;
 
-    cell->east = init_cell_all_east(cell, 0, 0);
-    cell->south = init_cell_all_south(cell, 0, 0);
-    cell->south_east = cell->south->east;
-    populate_north_row(cell->east);
-    populate_west_column(cell->south);
-    populate_all(cell->south_east);
+    while (y-- > 0) {
+        cell_t* cell_x = cell_y;
+        unsigned int x = board_size_x;
+        while (x-- > 0) {
+             cell_x->east = new cell_t;
+             cell_x->east->west = cell_x;
+             cell_x = cell_x->east;
 
-    return cell;
+        }
+        cell_y->south = new cell_t;
+        cell_y->south->north = cell_y;
+        cell_y = cell_y->south;
+    }
+
+    while(y++ < board_size_y) {
+        populate_east_all(cell_y);
+        cell_y =cell_y->north;
+            
+    }
+
+    return cell_y; // most north westerncell
 }
 
 int cell_count(cell_t* cell) {
