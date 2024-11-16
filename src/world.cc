@@ -113,6 +113,13 @@ cell_t* CellBoard::init_raster(void) {
     return cell;
 }
 
+int cell_count(cell_t* cell) {
+    return (cell->north_west != nullptr) + (cell->north != nullptr) +
+           (cell->north_east != nullptr) + (cell->west != nullptr) +
+           (cell->east != nullptr) + (cell->south_west != nullptr) +
+           (cell->south != nullptr) + (cell->south_east != nullptr);
+}
+
 void CellBoard::print(void) {
     cell_t* cell_x;
     cell_t* cell_y = board_start;
@@ -121,11 +128,12 @@ void CellBoard::print(void) {
         cell_x = cell_y;
 
         while (cell_x->east != nullptr) {
-            if (cell_x->is_bomb) {
-                std::cout << "x";
-            } else {
-                std::cout << " ";
-            }
+            std::cout << cell_count(cell_x);
+            // if (cell_x->is_bomb) {
+            //     std::cout << "x";
+            // } else {
+            //     std::cout << " ";
+            // }
             cell_x = cell_x->east;
         }
 
@@ -188,8 +196,8 @@ CellBoard::CellBoard(const unsigned int size_x,
     : board_size_x(size_x), board_size_y(size_y) {
     std::srand(std::time(nullptr));
     board_start = init_raster();
-    cell_t* cell = raster_get_cell(5, 5);
-    cell->is_bomb = 1;
+    // cell_t* cell = raster_get_cell(5, 5);
+    // cell->is_bomb = 1;
 }
 
 CellBoard::~CellBoard(void) {}
