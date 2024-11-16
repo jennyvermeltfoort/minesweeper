@@ -43,12 +43,12 @@ void CellBoard::populate_row_all(cell_t* cell) {
     }
 
     if (cell->east != nullptr) {
-        populate_all_east(cell->east);
+        populate_row_all(cell->east);
     }
 }
 
-cell_t* CellBoard::init_raster(void) {
-    cell_t* cell_y= new cell_t;
+cell_t* CellBoard::init_grid(void) {
+    cell_t* cell_y = new cell_t;
     unsigned int y = board_size_y;
 
     while (y-- > 0) {
@@ -73,7 +73,7 @@ cell_t* CellBoard::init_raster(void) {
             
     }
 
-    return cell_y; // most north westerncell
+    return cell_y; // most north western cell
 }
 
 int cell_count(cell_t* cell) {
@@ -105,7 +105,7 @@ void CellBoard::print(void) {
     }
 }
 
-cell_t* CellBoard::raster_walk_east(cell_t* cell,
+cell_t* CellBoard::grid_walk_east(cell_t* cell,
                                     unsigned int steps) {
     while (steps-- > 0) {
         cell = cell->east;
@@ -113,7 +113,7 @@ cell_t* CellBoard::raster_walk_east(cell_t* cell,
     return cell;
 }
 
-cell_t* CellBoard::raster_walk_south(cell_t* cell,
+cell_t* CellBoard::grid_walk_south(cell_t* cell,
                                      unsigned int steps) {
     while (steps-- > 0) {
         cell = cell->south;
@@ -121,7 +121,7 @@ cell_t* CellBoard::raster_walk_south(cell_t* cell,
     return cell;
 }
 
-cell_t* CellBoard::raster_walk_south_east(cell_t* cell,
+cell_t* CellBoard::grid_walk_south_east(cell_t* cell,
                                           unsigned int steps) {
     while (steps-- > 0) {
         cell = cell->south_east;
@@ -129,7 +129,7 @@ cell_t* CellBoard::raster_walk_south_east(cell_t* cell,
     return cell;
 }
 
-cell_t* CellBoard::raster_get_cell(unsigned int x, unsigned int y) {
+cell_t* CellBoard::grid_get_cell(unsigned int x, unsigned int y) {
     cell_t* cell = nullptr;
     unsigned int steps_diagonal;
 
@@ -138,9 +138,9 @@ cell_t* CellBoard::raster_get_cell(unsigned int x, unsigned int y) {
     }
 
     steps_diagonal = min(x, y);
-    cell = raster_walk_south_east(board_start, steps_diagonal);
-    cell = raster_walk_east(cell, x - steps_diagonal);
-    cell = raster_walk_south(cell, y - steps_diagonal);
+    cell = grid_walk_south_east(board_start, steps_diagonal);
+    cell = grid_walk_east(cell, x - steps_diagonal);
+    cell = grid_walk_south(cell, y - steps_diagonal);
     return cell;
 }
 
@@ -158,7 +158,7 @@ CellBoard::CellBoard(const unsigned int size_x,
                      const unsigned int count_bomb)
     : board_size_x(size_x), board_size_y(size_y) {
     std::srand(std::time(nullptr));
-    board_start = init_raster();
+    board_start = init_grid();
     // cell_t* cell = raster_get_cell(5, 5);
     // cell->is_bomb = 1;
 }
