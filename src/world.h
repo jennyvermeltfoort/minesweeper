@@ -5,9 +5,12 @@
 #define __GUARD_WORLD_H
 
 typedef struct CELL_T cell_t;
+typedef struct CELL_INFO_T {
+    bool is_bomb;
+} cell_info_t;
 
 struct CELL_T {
-    bool is_bomb;
+    cell_info_t info;
     cell_t *north_east;
     cell_t *north;
     cell_t *north_west;
@@ -40,7 +43,7 @@ class CellBoard {
     cell_t *raster_walk_east(cell_t *cell, unsigned int steps);
     cell_t *raster_walk_south(cell_t *cell, unsigned int steps);
     cell_t *raster_walk_south_east(cell_t *cell, unsigned int steps);
-    cell_t *raster_get_cell(unsigned int x, unsigned int y);
+    cell_info_t *raster_get_cell_info(unsigned int x, unsigned int y);
 
    public:
     CellBoard(const unsigned int size_x, const unsigned int size_y,
