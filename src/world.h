@@ -28,6 +28,7 @@ typedef enum BOARD_RETURN_T {
 	BOARD_RETURN_OK = 0,
 	BOARD_RETURN_BOMB_CELL,
 	BOARD_RETURN_NO_FLAGS,
+	BOARD_RETURN_IS_OPEN,
 } board_return_t;
 
 class Board {

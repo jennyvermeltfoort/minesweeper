@@ -126,7 +126,8 @@ void cell_open(cell_t * cell, cell_t * origin) {
 
 	for (unsigned int i = 0 ; i < NEIGHBOUR_COUNT ; i++) {
 		cell_t * neighbour = neighbours.array[i];
-		if (neighbour != nullptr && neighbour->info.is_open == false) {
+		if (neighbour != nullptr && neighbour->info.is_open == false 
+				&& neighbour->info.is_flag == false) {
 			cell_open(neighbour, cell);
 		}
 	}
@@ -137,15 +138,20 @@ board_return_t Board::cell_set_open(unsigned int x, unsigned int y) {
 	if (cell->info.is_bomb == true) {
 		return BOARD_RETURN_BOMB_CELL;
 	}
+	if (cell->info.is_open == true) {
+		return BOARD_RETURN_IS_OPEN;
+	}
 	cell_open(cell, nullptr);
 	return BOARD_RETURN_OK;
 }
-
 
 board_return_t Board::cell_set_flag(unsigned int x, unsigned int y) {
 	cell_t* cell = grid_get_cell(x,y);
 	if (flag_count < 0) {
 		return BOARD_RETURN_NO_FLAGS;
+	}
+	if (cell->info.is_open == true) {
+		return BOARD_RETURN_IS_OPEN;
 	}
 	cell->info.is_flag = true;
 	flag_count--;
@@ -208,12 +214,12 @@ void Board::print(void) {
         cell_x = cell_y;
 
         while (cell_x != nullptr) {
-             if (cell_x->info.is_flag) {
+	    if (cell_x->info.is_open ) {
+                 std::cout << cell_x->info.bomb_count;
+	    } else if (cell_x->info.is_flag) {
                  std::cout << "f";
 	     } else if (cell_x->info.is_bomb) {
                  std::cout << "x";
-	    } else if (cell_x->info.is_open ) {
-                 std::cout << cell_x->info.bomb_count;
 	    }else {
                  std::cout << ".";
              }
