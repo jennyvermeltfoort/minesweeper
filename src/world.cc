@@ -95,20 +95,16 @@ int cell_count(cell_t* cell) {
 void CellBoard::print(void) {
     cell_t* cell_x =board_start;
     cell_t* cell_y = board_start;
-    int i = 0;
 
     while (cell_y != nullptr) {
         cell_x = cell_y;
 
-	std::cout << +i++  << ":";
-
         while (cell_x != nullptr) {
-            std::cout << cell_count(cell_x);
-            // if (cell_x->is_bomb) {
-            //     std::cout << "x";
-            // } else {
-            //     std::cout << " ";
-            // }
+             if (cell_x->info.is_bomb) {
+                 std::cout << "x";
+            } else {
+                 std::cout << ".";
+             }
             cell_x = cell_x->east;
         }
 
@@ -171,8 +167,8 @@ CellBoard::CellBoard(const unsigned int size_x,
     : board_size_x(size_x), board_size_y(size_y) {
     std::srand(std::time(nullptr));
     board_start = init_grid();
-    // cell_t* cell = raster_get_cell(5, 5);
-    // cell->is_bomb = 1;
+     cell_info_t* info = grid_get_cell_info(9, 89);
+     info->is_bomb = 1;
 }
 
 CellBoard::~CellBoard(void) {}
