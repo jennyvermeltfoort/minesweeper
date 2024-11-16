@@ -18,18 +18,17 @@ bool CellBoard::is_not_south_west_corner(const unsigned int x,
     return is_not_south_edge(y) && is_not_east_edge(x);
 }
 
-void CellBoard::populate_all_east(cell_t* cell) {
-    cell_t* cell_west = cell->west;
-
-    if (cell_west == nullptr && cell->north != nullptr) {
+void CellBoard::populate_cell_east(cell_t* cell) {
+     if (cell->north != nullptr) {
         cell->north_east = cell->north->east;
-    } else if (cell_west == nullptr && cell->south != nullptr) {
+    }
+      if (cell->south != nullptr) {
         cell->south_east = cell->south->east;
     }
+}
 
-    if (cell_west == nullptr) {
-        return populate_all(cell->east);
-    }
+void CellBoard::populate_row_all(cell_t* cell) {
+    cell_t* cell_west = cell->west;
 
     if (cell_west->north =! nullptr) {
        cell->north_west = cell_west->north;
@@ -66,9 +65,11 @@ cell_t* CellBoard::init_raster(void) {
         cell_y = cell_y->south;
     }
 
-    while(y++ < board_size_y) { 
-        populate_east_all(cell_y->east);
-        cell_y =cell_y->north;
+    cell_t* cell_first = cell_y;
+    while(y++ < board_size_y) {
+        populate_cell_east(cell_first);
+        populate_row_all(cell_first->east);
+        cell_first = cell_first->north;
             
     }
 
