@@ -4,21 +4,14 @@
 #include <ctime>
 #include <iostream>
 
+#define NEIGHBOUR_COUNT 8
+typedef struct CELL_NEIGHBOURS_T {
+	cell_t* array[NEIGHBOUR_COUNT];
+} cell_neighbours_t;
+
 int16_t min(int16_t n1, int16_t n2) { return (n1 < n2) ? n1 : n2; }
 
-bool CellBoard::is_not_south_edge(const unsigned int y) {
-    return (y < board_size_y);
-}
-
-bool CellBoard::is_not_east_edge(const unsigned int x) {
-    return (x < board_size_x);
-}
-bool CellBoard::is_not_south_west_corner(const unsigned int x,
-                                         const unsigned int y) {
-    return is_not_south_edge(y) && is_not_east_edge(x);
-}
-
-void CellBoard::populate_cell_east(cell_t* cell) {
+void populate_cell_east(cell_t* cell) {
     if (cell->north != nullptr) {
         cell->north_east = cell->north->east;
     }
@@ -27,7 +20,7 @@ void CellBoard::populate_cell_east(cell_t* cell) {
     }
 }
 
-void CellBoard::recursive_populate_row_all(cell_t* cell) {
+void recursive_populate_row_all(cell_t* cell) {
     cell_t* cell_west = cell->west;
 
     if (cell_west->north != nullptr) {
@@ -53,8 +46,130 @@ void CellBoard::recursive_populate_row_all(cell_t* cell) {
     }
 }
 
-cell_t* CellBoard::init_grid(void) {
-    cell_t* cell_first = new cell_t;
+
+int cell_count(cell_t* cell) {
+    return (cell->north_west != nullptr) + (cell->north != nullptr) +
+           (cell->north_east != nullptr) + (cell->west != nullptr) +
+           (cell->east != nullptr) + (cell->south_west != nullptr) +
+           (cell->south != nullptr) + (cell->south_east != nullptr);
+}
+
+
+cell_t* grid_walk_east(cell_t* cell,
+                                    unsigned int steps) {
+    while (steps-- > 0) {
+        cell = cell->east;
+    }
+    return cell;
+}
+
+cell_t* grid_walk_south(cell_t* cell,
+                                     unsigned int steps) {
+    while (steps-- > 0) {
+        cell = cell->south;
+    }
+    return cell;
+}
+
+cell_t* grid_walk_south_east(cell_t* cell,
+                                          unsigned int steps) {
+    while (steps-- > 0) {
+        cell = cell->south_east;
+    }
+    return cell;
+}
+
+cell_neighbours_t cell_get_neighbour_array(cell_t * cell) {
+	return { .array = {
+		cell->north_west,
+		cell->north,
+		cell->north_east,
+		cell->west,
+		cell->east,
+		cell->south_west,
+		cell->south,
+		cell->south_east,
+	}};
+}
+
+cell_t * grid_walk_random_step(cell_t* cell) {
+    	std::srand(std::time(nullptr));
+	cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
+	unsigned int random_int = rand() % 8;
+
+	do {
+		cell = neighbours.array[random_int];
+		random_int = (random_int + 1) % 8;
+	} while (cell == nullptr);
+
+	return cell;
+}
+
+void cell_make_bomb(cell_t * cell) {
+	cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
+	for (unsigned int i = 0 ; i < NEIGHBOUR_COUNT ; i++) {
+		cell_t * neighbour = neighbours.array[i];
+		if (neighbour != nullptr) {
+			neighbour->info.bomb_count++;
+		}
+	}
+	cell->info.is_bomb = true;
+}
+
+void cell_open(cell_t * cell, cell_t * origin) {
+	cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
+	cell->info.is_open = true;
+
+	if (cell->info.bomb_count != 0) {
+		return;
+	}
+
+	for (unsigned int i = 0 ; i < NEIGHBOUR_COUNT ; i++) {
+		cell_t * neighbour = neighbours.array[i];
+		if (neighbour != nullptr && neighbour->info.is_open == false) {
+			cell_open(neighbour, cell);
+		}
+	}
+}
+
+board_return_t Board::cell_set_open(unsigned int x, unsigned int y) {
+	cell_t* cell = grid_get_cell(x,y);
+	if (cell->info.is_bomb == true) {
+		return BOARD_RETURN_BOMB_CELL;
+	}
+	cell_open(cell, nullptr);
+	return BOARD_RETURN_OK;
+}
+
+
+board_return_t Board::cell_set_flag(unsigned int x, unsigned int y) {
+	cell_t* cell = grid_get_cell(x,y);
+	if (flag_count < 0) {
+		return BOARD_RETURN_NO_FLAGS;
+	}
+	cell->info.is_flag = true;
+	flag_count--;
+	return BOARD_RETURN_OK;
+}
+
+cell_t* Board::grid_get_cell(unsigned int x, unsigned int y) {
+    cell_t* cell;
+    unsigned int steps_diagonal;
+
+    if (x >= board_size_x || y >= board_size_y) {
+	    std::cout << "test" << std::endl;
+        return nullptr;
+    }
+
+    steps_diagonal = min(x, y);
+    cell = grid_walk_south_east(board_start, steps_diagonal);
+    cell = grid_walk_east(cell, x - steps_diagonal);
+    cell = grid_walk_south(cell, y - steps_diagonal);
+    return cell;
+}
+
+cell_t* Board::init_grid(void) {
+    cell_t* cell_first = board_start;
     cell_t *cell_y = cell_first;
 
     for (int i = board_size_y - 1; i > 0 ; i--) {
@@ -85,14 +200,7 @@ cell_t* CellBoard::init_grid(void) {
     return cell_first; // most north western cell
 }
 
-int cell_count(cell_t* cell) {
-    return (cell->north_west != nullptr) + (cell->north != nullptr) +
-           (cell->north_east != nullptr) + (cell->west != nullptr) +
-           (cell->east != nullptr) + (cell->south_west != nullptr) +
-           (cell->south != nullptr) + (cell->south_east != nullptr);
-}
-
-void CellBoard::print(void) {
+void Board::print(void) {
     cell_t* cell_x =board_start;
     cell_t* cell_y = board_start;
 
@@ -100,9 +208,13 @@ void CellBoard::print(void) {
         cell_x = cell_y;
 
         while (cell_x != nullptr) {
-             if (cell_x->info.is_bomb) {
+             if (cell_x->info.is_flag) {
+                 std::cout << "f";
+	     } else if (cell_x->info.is_bomb) {
                  std::cout << "x";
-            } else {
+	    } else if (cell_x->info.is_open ) {
+                 std::cout << cell_x->info.bomb_count;
+	    }else {
                  std::cout << ".";
              }
             cell_x = cell_x->east;
@@ -113,62 +225,25 @@ void CellBoard::print(void) {
     }
 }
 
-cell_t* CellBoard::grid_walk_east(cell_t* cell,
-                                    unsigned int steps) {
-    while (steps-- > 0) {
-        cell = cell->east;
-    }
-    return cell;
+void Board::init_bomb(unsigned int bomb_count) {
+    	std::srand(std::time(nullptr));
+	while (bomb_count-- > 0) {
+		unsigned int x = rand() % (board_size_x - 1);
+		unsigned int y = rand() % (board_size_y - 1);
+		cell_t *cell = grid_get_cell(x,y);
+		while (cell->info.is_bomb == true) {
+			cell = grid_walk_random_step(cell);
+		}
+		cell_make_bomb(cell);
+	}
 }
 
-cell_t* CellBoard::grid_walk_south(cell_t* cell,
-                                     unsigned int steps) {
-    while (steps-- > 0) {
-        cell = cell->south;
-    }
-    return cell;
-}
-
-cell_t* CellBoard::grid_walk_south_east(cell_t* cell,
-                                          unsigned int steps) {
-    while (steps-- > 0) {
-        cell = cell->south_east;
-    }
-    return cell;
-}
-
-cell_info_t* CellBoard::grid_get_cell_info(unsigned int x, unsigned int y) {
-    cell_t* cell;
-    unsigned int steps_diagonal;
-
-    if (x > board_size_x || y > board_size_y) {
-        return nullptr;
-    }
-
-    steps_diagonal = min(x, y);
-    cell = grid_walk_south_east(board_start, steps_diagonal);
-    cell = grid_walk_east(cell, x - steps_diagonal);
-    cell = grid_walk_south(cell, y - steps_diagonal);
-    return &cell->info;
-}
-
-/**
- * The board is composed by first allocating all the cells. The
- * algoritm recusivly builds the board and walks over the board
- * diagonally. Let x be the initial cell then f(x) does: then all
- * eastern cells of x are allocated. then all southern cells of x are
- * allocated. then f(x->south_east)
- *
- *  When the south eastern corner is visited, the algoritm walk
- */
-CellBoard::CellBoard(const unsigned int size_x,
+Board::Board(const unsigned int size_x,
                      const unsigned int size_y,
-                     const unsigned int count_bomb)
-    : board_size_x(size_x), board_size_y(size_y) {
-    std::srand(std::time(nullptr));
-    board_start = init_grid();
-     cell_info_t* info = grid_get_cell_info(9, 89);
-     info->is_bomb = 1;
+                     const unsigned int bomb_count)
+    : board_size_x(size_x), board_size_y(size_y), flag_count(bomb_count) {
+    init_grid();
+    init_bomb(bomb_count);
 }
 
-CellBoard::~CellBoard(void) {}
+Board::~Board(void) {}

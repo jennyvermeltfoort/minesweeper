@@ -7,6 +7,9 @@
 typedef struct CELL_T cell_t;
 typedef struct CELL_INFO_T {
     bool is_bomb;
+    bool is_flag;
+    bool is_open;
+    unsigned int bomb_count;
 } cell_info_t;
 
 struct CELL_T {
@@ -21,38 +24,32 @@ struct CELL_T {
     cell_t *south_west;
 };
 
-class CellBoard {
+typedef enum BOARD_RETURN_T {
+	BOARD_RETURN_OK = 0,
+	BOARD_RETURN_BOMB_CELL,
+	BOARD_RETURN_NO_FLAGS,
+} board_return_t;
+
+class Board {
    private:
-    cell_t *board_start;
     const unsigned int board_size_x;
     const unsigned int board_size_y;
+    cell_t * const board_start = new cell_t;
+    int flag_count;
+
     cell_t *init_grid(void);
-    void populate_cell_east(cell_t *cell);
-    void recursive_populate_row_all(cell_t *cell);
-    bool is_not_south_edge(const unsigned int y);
-    bool is_not_east_edge(const unsigned int x);
-    bool is_not_south_west_corner(const unsigned int x,
-                                  const unsigned int y);
-    cell_t *grid_walk_east(cell_t *cell, unsigned int steps);
-    cell_t *grid_walk_south(cell_t *cell, unsigned int steps);
-    cell_t *grid_walk_south_east(cell_t *cell, unsigned int steps);
-    cell_info_t *grid_get_cell_info(unsigned int x, unsigned int y);
+    void init_bomb(unsigned int bomb_count);
+    cell_t *grid_get_cell(unsigned int x, unsigned int y);
 
    public:
-    CellBoard(const unsigned int size_x, const unsigned int size_y,
-              const unsigned int count_bomb);
-    ~CellBoard(void);
+    Board(const unsigned int size_x, const unsigned int size_y,
+              const unsigned int bomb_count);
+    ~Board(void);
+
+    board_return_t cell_set_open(unsigned int x, unsigned int y);
+    board_return_t cell_set_flag(unsigned int x, unsigned int y);
 
     void print();
-};
-
-class World {
-   private:
-    CellBoard world;
-
-   public:
-    World(void);
-    ~World(void);
 };
 
 #endif  // __GUARD_WORLD_H
