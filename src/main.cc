@@ -8,8 +8,8 @@
 
 class BoardInputHandler {
 	private:
-	bool is_end;
 	Board *board;
+	bool is_end;
 
 	void cb_cursor_move_north(void) {
 		board->cursor_move_north();
@@ -27,7 +27,7 @@ class BoardInputHandler {
 		board->cursor_set_flag();
 	}
 	void cb_cursor_set_open(void) {
-		if (board->cursor_set_open() == BOARD_RETURN_BOMB_CELL) {
+		if (board->cursor_set_open() == BOARD_RETURN_STOP) {
 			is_end = true;
 		}
 	}
@@ -50,14 +50,18 @@ class BoardInputHandler {
 		{'s', &BoardInputHandler::cb_toggle_show_bomb},
 	};
 	if (c == 'e') {
-		*_is_end = is_end;
-		return;
-	}
-	if (map_callback.find(c) != map_callback.end()) {
+		is_end = true;
+	} else if (map_callback.find(c) != map_callback.end()) {
 		map_callback[c](this);
 	}
+
 	board->print();
 	*_is_end = is_end;
+
+	if (*_is_end == true) {
+		std::cout << "Press enter to exit..." << std::endl;
+		std::cin.get();
+	}
 		}
 
 };
@@ -66,7 +70,7 @@ class BoardInputHandler {
 int main(void) {
     const unsigned int BOARD_SIZE_X = 20;
     const unsigned int BOARD_SIZE_y = 20;
-    Board board(BOARD_SIZE_X, BOARD_SIZE_y, 20);
+    Board board(BOARD_SIZE_X, BOARD_SIZE_y, 1);
     BoardInputHandler input_handler(&board);
     bool is_end = false;
 

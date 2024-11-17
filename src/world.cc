@@ -139,16 +139,24 @@ int cell_open(cell_t * cell, cell_t * origin) {
 
 board_return_t Board::cursor_set_open(void) {
 	cell_t* const cell = board_cursor;
+	if (cell->info.is_flag == true) {
+		return BOARD_RETURN_IS_FLAG;
+	}
 	if (cell->info.is_bomb == true) {
 		is_dead = true;
 		is_show_bomb = true;
-		return BOARD_RETURN_BOMB_CELL;
+		return BOARD_RETURN_STOP;
 	}
 	if (cell->info.is_open == true) {
 		return BOARD_RETURN_IS_OPEN;
 	}
-		open_count -= cell_open(cell, nullptr);
-		return BOARD_RETURN_OK;
+	open_count -= cell_open(cell, nullptr);
+	if (open_count <= 0) {
+		is_done = true;
+		is_show_bomb = true;
+		return BOARD_RETURN_STOP;
+	}
+	return BOARD_RETURN_OK;
 }
 
 board_return_t Board::cursor_set_flag(void) {
@@ -224,12 +232,17 @@ void Board::print(void) {
 	const unsigned int color_open = 241;
 	const unsigned int color_close = 242;
 	const unsigned int color_dead = 124;
+	const unsigned int color_done = 40;
 	std::cout << "\033[2J" << std::flush;
 	std::cout << "\033[" << 1 << ";" << 1 << "H"
 		                  << std::flush;
 
 	if (is_dead == true) {
 		std::cout << "\033[38:5:" << +color_dead << "m" << std::flush;
+	}
+	else 
+	if (is_done == true) {
+		std::cout << "\033[38:5:" << +color_done << "m" << std::flush;
 	}
 
 	while (cell_x != nullptr) {
@@ -289,7 +302,9 @@ void Board::print(void) {
 
 	if (is_dead == true) {
 		std::cout << "You died!" << std::endl;
-	} else {
+	} else if (is_done == true) {
+		std::cout << "You won!" << std::endl;
+	}else {
 	std::cout << "Flags: " << flag_count << "; Open: " 
 		<< open_count << "." << std::endl;
 	}

@@ -31,9 +31,10 @@ struct CELL_T {
 
 typedef enum BOARD_RETURN_T {
 	BOARD_RETURN_OK = 0,
-	BOARD_RETURN_BOMB_CELL,
 	BOARD_RETURN_NO_FLAGS,
 	BOARD_RETURN_IS_OPEN,
+	BOARD_RETURN_STOP,
+	BOARD_RETURN_IS_FLAG,
 } board_return_t;
 
 class Board {
@@ -46,6 +47,7 @@ class Board {
     int open_count;
     bool is_show_bomb;
     bool is_dead;
+    bool is_done;
 
     cell_t *init_grid(void);
     void init_bomb(unsigned int bomb_count);
