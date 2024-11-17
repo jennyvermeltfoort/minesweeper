@@ -9,8 +9,13 @@ typedef struct CELL_INFO_T {
     bool is_bomb;
     bool is_flag;
     bool is_open;
+    bool is_cursor;
     unsigned int bomb_count;
 } cell_info_t;
+
+typedef struct PLAYER_INFO_T {
+    bool is_dead;
+} player_info_t;
 
 struct CELL_T {
     cell_info_t info;
@@ -36,19 +41,29 @@ class Board {
     const unsigned int board_size_x;
     const unsigned int board_size_y;
     cell_t * const board_start = new cell_t;
+    cell_t * board_cursor;
     int flag_count;
+    int open_count;
+    bool is_show_bomb;
+    bool is_dead;
 
     cell_t *init_grid(void);
     void init_bomb(unsigned int bomb_count);
     cell_t *grid_get_cell(unsigned int x, unsigned int y);
+    void set_cursor(cell_t* new_cursor);
 
    public:
     Board(const unsigned int size_x, const unsigned int size_y,
               const unsigned int bomb_count);
     ~Board(void);
 
-    board_return_t cell_set_open(unsigned int x, unsigned int y);
-    board_return_t cell_set_flag(unsigned int x, unsigned int y);
+    board_return_t cursor_set_open(void);
+    board_return_t cursor_set_flag(void);
+    void cursor_move_north(void);
+    void cursor_move_south(void);
+    void cursor_move_west(void);
+    void cursor_move_east(void);
+    void toggle_show_bomb(void);
 
     void print();
 };

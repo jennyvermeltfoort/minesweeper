@@ -99,7 +99,9 @@ cell_t * grid_walk_random_step(cell_t* cell) {
 
 	do {
 		cell = neighbours.array[random_int];
-		random_int = (random_int + 1) % 8;
+		random_int = (random_int + 5) % 8; // increment by 5 to find the 
+						   // a neighbour that is not a 
+						   // nullptr in a minimum of two steps.
 	} while (cell == nullptr);
 
 	return cell;
@@ -116,45 +118,54 @@ void cell_make_bomb(cell_t * cell) {
 	cell->info.is_bomb = true;
 }
 
-void cell_open(cell_t * cell, cell_t * origin) {
+int cell_open(cell_t * cell, cell_t * origin) {
 	cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
 	cell->info.is_open = true;
+	int cell_opened = 1;
 
 	if (cell->info.bomb_count != 0) {
-		return;
+		return cell_opened;
 	}
 
 	for (unsigned int i = 0 ; i < NEIGHBOUR_COUNT ; i++) {
 		cell_t * neighbour = neighbours.array[i];
 		if (neighbour != nullptr && neighbour->info.is_open == false 
 				&& neighbour->info.is_flag == false) {
-			cell_open(neighbour, cell);
+			cell_opened += cell_open(neighbour, cell);
 		}
 	}
+	return cell_opened;
 }
 
-board_return_t Board::cell_set_open(unsigned int x, unsigned int y) {
-	cell_t* cell = grid_get_cell(x,y);
+board_return_t Board::cursor_set_open(void) {
+	cell_t* const cell = board_cursor;
 	if (cell->info.is_bomb == true) {
+		is_dead = true;
+		is_show_bomb = true;
 		return BOARD_RETURN_BOMB_CELL;
 	}
 	if (cell->info.is_open == true) {
 		return BOARD_RETURN_IS_OPEN;
 	}
-	cell_open(cell, nullptr);
-	return BOARD_RETURN_OK;
+		open_count -= cell_open(cell, nullptr);
+		return BOARD_RETURN_OK;
 }
 
-board_return_t Board::cell_set_flag(unsigned int x, unsigned int y) {
-	cell_t* cell = grid_get_cell(x,y);
+board_return_t Board::cursor_set_flag(void) {
+	cell_t* const cell = board_cursor;
+	if (cell->info.is_flag) {
+		cell->info.is_flag = false;
+		flag_count++;
+		return BOARD_RETURN_OK;
+	}
 	if (flag_count < 0) {
 		return BOARD_RETURN_NO_FLAGS;
 	}
 	if (cell->info.is_open == true) {
 		return BOARD_RETURN_IS_OPEN;
 	}
-	cell->info.is_flag = true;
-	flag_count--;
+		cell->info.is_flag = true;
+		flag_count--;
 	return BOARD_RETURN_OK;
 }
 
@@ -207,28 +218,81 @@ cell_t* Board::init_grid(void) {
 }
 
 void Board::print(void) {
-    cell_t* cell_x =board_start;
+    cell_t* cell_x = board_start;
     cell_t* cell_y = board_start;
+	const unsigned int color_edge = 240;
+	const unsigned int color_open = 241;
+	const unsigned int color_close = 242;
+	const unsigned int color_dead = 124;
+	std::cout << "\033[2J" << std::flush;
+	std::cout << "\033[" << 1 << ";" << 1 << "H"
+		                  << std::flush;
 
+	if (is_dead == true) {
+		std::cout << "\033[38:5:" << +color_dead << "m" << std::flush;
+	}
+
+	while (cell_x != nullptr) {
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   " << std::flush;
+		cell_x = cell_x->east;
+	}
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   " << std::flush;
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   " << std::flush;
+	std::cout << std::endl;
     while (cell_y != nullptr) {
         cell_x = cell_y;
-
+	std::cout << "\033[48:5:" << +color_edge << "m" << "   ";
         while (cell_x != nullptr) {
-	    if (cell_x->info.is_open ) {
-                 std::cout << cell_x->info.bomb_count;
+	    if (cell_x == board_cursor) {
+		std::cout << "\033[7m";		
+	    }
+	    if (cell_x->info.is_open && cell_x->info.bomb_count != 0) {
+		std::cout << "\033[48:5:"<< +color_open << "m" 
+			<< " " << +cell_x->info.bomb_count 
+			<< " ";
+	    } else if (cell_x->info.is_open && cell_x->info.bomb_count == 0) {
+	    	std::cout << "\033[48:5:" << +color_open << "m" 
+			<< "   ";
 	    } else if (cell_x->info.is_flag) {
-                 std::cout << "f";
-	     } else if (cell_x->info.is_bomb) {
-                 std::cout << "x";
-	    }else {
-                 std::cout << ".";
-             }
+		std::cout << "\033[48:5:" << +color_open << "m" 
+			<< " F ";
+	    } else if (is_show_bomb == true && cell_x->info.is_bomb) {
+		std::cout << "\033[48:5:" << +color_open << "m" 
+			<< " X ";
+	    } else {
+		std::cout << "\033[48:5:" << +color_close << "m" 
+			<< "   ";
+	    }
+	    if (cell_x == board_cursor) {
+		std::cout << "\033[27m";		
+	    }
+	    std::cout << std::flush;
+            
             cell_x = cell_x->east;
         }
 
+	std::cout << "\033[48:5:" << +color_edge << "m" << "   ";
         std::cout << std::endl;
         cell_y = cell_y->south;
     }
+
+    cell_x = board_start;
+	while (cell_x != nullptr) {
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   ";
+		cell_x = cell_x->east;
+	}
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   ";
+		std::cout << "\033[48:5:" << +color_edge << "m" << "   ";
+	std::cout << "\033[0m";		
+	std::cout << "\033[39;49m";		
+	std::cout << std::endl;
+
+	if (is_dead == true) {
+		std::cout << "You died!" << std::endl;
+	} else {
+	std::cout << "Flags: " << flag_count << "; Open: " 
+		<< open_count << "." << std::endl;
+	}
 }
 
 void Board::init_bomb(unsigned int bomb_count) {
@@ -244,12 +308,40 @@ void Board::init_bomb(unsigned int bomb_count) {
 	}
 }
 
+void Board::toggle_show_bomb(void) {
+	is_show_bomb = !is_show_bomb;
+}
+
+void Board::set_cursor(cell_t * new_cursor) {
+	if (new_cursor != nullptr) {
+		board_cursor = new_cursor;
+	}
+}
+
+void Board::cursor_move_north(void) {
+	set_cursor(board_cursor->north);
+}
+
+void Board::cursor_move_south(void) {
+	set_cursor(board_cursor->south);
+}
+
+void Board::cursor_move_west(void) {
+	set_cursor(board_cursor->west);
+}
+
+void Board::cursor_move_east(void) {
+	set_cursor(board_cursor->east);
+}
+
 Board::Board(const unsigned int size_x,
                      const unsigned int size_y,
                      const unsigned int bomb_count)
-    : board_size_x(size_x), board_size_y(size_y), flag_count(bomb_count) {
+    : board_size_x(size_x), board_size_y(size_y), flag_count(bomb_count),
+	open_count(size_x * size_y - bomb_count), is_show_bomb(false) {
     init_grid();
     init_bomb(bomb_count);
+    set_cursor(grid_get_cell(size_x / 2, size_y / 2));
 }
 
 Board::~Board(void) {}
