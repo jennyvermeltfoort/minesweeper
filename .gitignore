@@ -8,3 +8,6 @@
 main.dSYM/
 .vscode/
 *.o
+build/
+minesweeper
+**/*.swp
