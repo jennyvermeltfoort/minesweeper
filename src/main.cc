@@ -8,7 +8,7 @@
 int main(void) {
     const unsigned int BOARD_SIZE_X = 20;
     const unsigned int BOARD_SIZE_y = 20;
-    Board board(BOARD_SIZE_X, BOARD_SIZE_y, 1);
+    Board board(BOARD_SIZE_X, BOARD_SIZE_y, 100);
     BoardInputHandler input_handler(&board);
     bool is_end = false;
 

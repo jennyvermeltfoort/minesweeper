@@ -26,6 +26,11 @@ void print_cell(const unsigned int color, char c) {
               << " " << c << " ";
 }
 
+void print_cell(const unsigned int color, unsigned int n) {
+    std::cout << "\033[48:5:" << +color << "m"
+              << " " << +n << " ";
+}
+
 void print_clear_screen(void) {
     std::cout << "\033[2J" << std::flush;
     std::cout << "\033[" << 1 << ";" << 1 << "H" << std::flush;
@@ -54,8 +59,7 @@ void print_cell(const cell_t* const cell,
         print_set_inverse_fg_bg();
     }
     if (cell->info.is_open && cell->info.bomb_count != 0) {
-        print_cell(color_open,
-                   static_cast<char>(cell->info.bomb_count));
+        print_cell(color_open, +cell->info.bomb_count);
     } else if (cell->info.is_open && cell->info.bomb_count == 0) {
         print_cell(color_open, ' ');
     } else if (cell->info.is_flag) {

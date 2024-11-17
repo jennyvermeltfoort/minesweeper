@@ -9,10 +9,8 @@ typedef struct CELL_INFO_T {
     bool is_bomb;
     bool is_flag;
     bool is_open;
-    bool is_cursor;
     unsigned int bomb_count;
 } cell_info_t;
-
 struct CELL_T {
     cell_info_t info;
     cell_t *north_east;
@@ -45,9 +43,7 @@ class Board {
     bool is_dead;
     bool is_done;
 
-    void grid_init(void);
-    void bomb_init(unsigned int bomb_count);
-    void set_cursor(cell_t *new_cursor);
+    void set_cursor(cell_t *cursor);
 
    public:
     Board(const unsigned int size_x, const unsigned int size_y,

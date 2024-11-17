@@ -10,32 +10,6 @@ typedef struct CELL_NEIGHBOURS_T {
 
 int16_t min(int16_t n1, int16_t n2) { return (n1 < n2) ? n1 : n2; }
 
-cell_t* grid_walk_east(cell_t* const cell_start, unsigned int steps) {
-    cell_t* cell = cell_start;
-    while (steps-- > 0) {
-        cell = cell->east;
-    }
-    return cell;
-}
-
-cell_t* grid_walk_south(cell_t* const cell_start,
-                        unsigned int steps) {
-    cell_t* cell = cell_start;
-    while (steps-- > 0) {
-        cell = cell->south;
-    }
-    return cell;
-}
-
-cell_t* grid_walk_south_east(cell_t* const cell_start,
-                             unsigned int steps) {
-    cell_t* cell = cell_start;
-    while (steps-- > 0) {
-        cell = cell->south_east;
-    }
-    return cell;
-}
-
 cell_neighbours_t cell_get_neighbour_array(cell_t* cell) {
     return {.array = {
                 cell->north_west,
@@ -64,16 +38,6 @@ cell_t* grid_walk_random_step(cell_t* cell) {
     return cell;
 }
 
-cell_t* grid_get_cell(cell_t* board_start, unsigned int x,
-                      unsigned int y) {
-    unsigned int steps_diagonal = min(x, y);
-    cell_t* cell;
-    cell = grid_walk_south_east(board_start, steps_diagonal);
-    cell = grid_walk_east(cell, x - steps_diagonal);
-    cell = grid_walk_south(cell, y - steps_diagonal);
-    return cell;
-}
-
 void cell_make_bomb(cell_t* cell) {
     cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
@@ -86,23 +50,22 @@ void cell_make_bomb(cell_t* cell) {
 }
 
 int cell_recursive_open(cell_t* cell, cell_t* origin) {
-    cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
+    int counter_opened = 1;
     cell->info.is_open = true;
-    int cell_opened = 1;
 
     if (cell->info.bomb_count != 0) {
-        return cell_opened;
+        return counter_opened;
     }
 
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
-        cell_t* neighbour = neighbours.array[i];
+        cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
         if (neighbour != nullptr &&
             neighbour->info.is_open == false &&
             neighbour->info.is_flag == false) {
-            cell_opened += cell_recursive_open(neighbour, cell);
+            counter_opened += cell_recursive_open(neighbour, cell);
         }
     }
-    return cell_opened;
+    return counter_opened;
 }
 
 board_return_t Board::cursor_set_open(void) {
@@ -210,27 +173,28 @@ void grid_populate(cell_t* cell_northern) {
     }
 }
 
-void Board::grid_init(void) {
-    grid_init_western_column(board_start, board_size_y - 1);
-    grid_init_rows(board_start, board_size_x - 1);
+void grid_init(cell_t* const board_start, unsigned int size_x,
+               unsigned int size_y) {
+    grid_init_western_column(board_start, size_y - 1);
+    grid_init_rows(board_start, size_x - 1);
     grid_populate(board_start);
 }
 
-void Board::bomb_init(unsigned int bomb_count) {
+void bomb_init(cell_t* const board_start, unsigned int max_step_size,
+               unsigned int bomb_count) {
+    cell_t* cell = board_start;
     while (bomb_count-- > 0) {
-        unsigned int x = rand() % (board_size_x - 1);
-        unsigned int y = rand() % (board_size_y - 1);
-        cell_t* cell = grid_get_cell(board_start, x, y);
-        while (cell->info.is_bomb == true) {
+        unsigned int steps = rand() % max_step_size;
+        while (cell->info.is_bomb == true || steps-- > 0) {
             cell = grid_walk_random_step(cell);
         }
         cell_make_bomb(cell);
     }
 }
 
-void Board::set_cursor(cell_t* new_cursor) {
-    if (new_cursor != nullptr) {
-        board_cursor = new_cursor;
+void Board::set_cursor(cell_t* cursor) {
+    if (cursor != nullptr) {
+        board_cursor = cursor;
     }
 }
 void Board::cursor_move_north(void) {
@@ -251,10 +215,9 @@ Board::Board(const unsigned int size_x, const unsigned int size_y,
       open_count(size_x * size_y - bomb_count),
       is_show_bomb(false) {
     std::srand(std::time(nullptr));
-    grid_init();
-    bomb_init(bomb_count);
-    set_cursor(grid_get_cell(board_start, board_size_x / 2,
-                             board_size_y / 2));
+    grid_init(board_start, board_size_x, board_size_y);
+    bomb_init(board_start, board_size_x, bomb_count);
+    set_cursor(board_start);
 }
 
 Board::~Board(void) {}
