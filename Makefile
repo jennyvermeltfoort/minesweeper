@@ -21,4 +21,4 @@ opd:
 	$(CC) $(CFLAGS) -o od.o opdracht/opdracht_dubbel.cc 
 
 clean:
-	$(RM) $(BUILD_DIR)
+	$(RM) -rf $(BUILD_DIR)

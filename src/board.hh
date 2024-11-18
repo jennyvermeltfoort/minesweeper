@@ -2,11 +2,24 @@
 #ifndef __GUARD_BOARD_H
 #define __GUARD_BOARD_H
 
+typedef enum CELL_STATE_E {
+    CELL_STATE_FLAG = 1,
+    CELL_STATE_OPEN = 2,
+    CELL_STATE_BOMB = 4,
+    CELL_STATE_MASK = 0x7,
+} cell_state_e;
+
+typedef enum BOARD_STATE_E {
+    BOARD_STATE_NORMAL = 1,
+    BOARD_STATE_SHOW_BOMB = 2,
+    BOARD_STATE_DEAD = 4,
+    BOARD_STATE_DONE = 8,
+    BOARD_STATE_MASK = 0xF,
+} board_state_e;
+
 typedef struct CELL_T cell_t;
 typedef struct CELL_INFO_T {
-    bool is_bomb;
-    bool is_flag;
-    bool is_open;
+    unsigned int state;
     unsigned int bomb_count;
 } cell_info_t;
 struct CELL_T {
@@ -21,12 +34,18 @@ struct CELL_T {
     cell_t *south_west;
 };
 
+bool cell_is_state(const cell_t *const cell,
+                   const cell_state_e state);
+void cell_set_state(cell_t *const cell, const cell_state_e state);
+void cell_unset_state(cell_t *const cell, const cell_state_e state);
+void cell_toggle_state(cell_t *const cell, const cell_state_e state);
+
 typedef enum BOARD_RETURN_T {
-    BOARD_RETURN_OK = 0,
-    BOARD_RETURN_NO_FLAGS,
-    BOARD_RETURN_IS_OPEN,
-    BOARD_RETURN_STOP,
-    BOARD_RETURN_IS_FLAG,
+    BOARD_RETURN_OK = 1,
+    BOARD_RETURN_NO_FLAGS = 2,
+    BOARD_RETURN_IS_OPEN = 4,
+    BOARD_RETURN_STOP = 8,
+    BOARD_RETURN_IS_FLAG = 16,
 } board_return_t;
 
 class Board {
@@ -37,18 +56,24 @@ class Board {
     cell_t *board_cursor;
     int flag_count;
     int open_count;
-    bool is_show_bomb;
-    bool is_dead;
-    bool is_done;
+    unsigned int board_state;
 
     void set_cursor(cell_t *cursor);
+    void grid_iterater(void (*func)(cell_t *cell));
 
    public:
     Board(const unsigned int size_x, const unsigned int size_y,
           const unsigned int bomb_count);
     ~Board(void);
-    void do_for_grid(void(*func)(cell_t * cell));
+
+    void grid_iterater(void (*func)(const cell_t *const cell));
+
     void print(void);
+
+    bool is_state(const board_state_e state) const;
+    void set_state(const board_state_e state);
+    void unset_state(const board_state_e state);
+    void toggle_state(const board_state_e state);
 
     board_return_t cursor_set_open(void);
     board_return_t cursor_set_flag(void);

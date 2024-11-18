@@ -53,54 +53,59 @@ void print_unset_inverse_fg_bg(void) {
     std::cout << "\033[27m" << std::flush;
 }
 
-void print_cell(const cell_t* const cell,
-                const cell_t* const board_cursor, bool is_show_bomb) {
+void print_cell(const Board* board, const cell_t* const cell,
+                const cell_t* const board_cursor) {
     if (cell == board_cursor) {
         print_set_inverse_fg_bg();
     }
-    if (cell->info.is_open && cell->info.bomb_count != 0) {
-        print_cell(color_open, +cell->info.bomb_count);
-    } else if (cell->info.is_open && cell->info.bomb_count == 0) {
-        print_cell(color_open, ' ');
-    } else if (cell->info.is_flag) {
-        print_cell(color_open, 'F');
-    } else if (is_show_bomb == true && cell->info.is_bomb) {
+
+    if (cell_is_state(cell, CELL_STATE_FLAG)) {
+        print_cell(color_close, 'F');
+    } else if (cell_is_state(cell, CELL_STATE_BOMB) &&
+               board->is_state(BOARD_STATE_SHOW_BOMB)) {
         print_cell(color_open, 'X');
+    } else if (cell_is_state(cell, CELL_STATE_OPEN) &&
+               cell->info.bomb_count != 0) {
+        print_cell(color_open, +cell->info.bomb_count);
+    } else if (cell_is_state(cell, CELL_STATE_OPEN)) {
+        print_cell(color_open, ' ');
     } else {
         print_cell(color_close, ' ');
     }
+    std::cout << std::flush;
+
     if (cell == board_cursor) {
         print_unset_inverse_fg_bg();
     }
-    std::cout << std::flush;
 }
 
-void print_row(const cell_t* cell, const cell_t* const board_cursor,
-               bool is_show_bomb) {
+void print_row(const Board* board, const cell_t* cell,
+               const cell_t* const board_cursor) {
     print_cell(color_edge, ' ');
     while (cell != nullptr) {
-        print_cell(cell, board_cursor, is_show_bomb);
+        print_cell(board, cell, board_cursor);
         cell = cell->east;
     }
     print_cell(color_edge, ' ');
     std::cout << std::endl;
 }
 
-void print_grid(const cell_t* cell, const cell_t* const board_cursor,
-                bool is_show_bomb, unsigned int edge_size_x) {
+void print_grid(const Board* board, const cell_t* cell,
+                const cell_t* const board_cursor,
+                unsigned int edge_size_x) {
     print_edge(color_edge, edge_size_x);
     while (cell != nullptr) {
-        print_row(cell, board_cursor, is_show_bomb);
+        print_row(board, cell, board_cursor);
         cell = cell->south;
     }
     print_edge(color_edge, edge_size_x);
 }
 
-void helper_board_state(bool is_done, bool is_dead, void (*done)(),
+void helper_board_state(unsigned int board_state, void (*done)(),
                         void (*dead)()) {
-    if (is_dead == true) {
+    if (board_state & BOARD_STATE_DEAD) {
         dead();
-    } else if (is_done == true) {
+    } else if (board_state & BOARD_STATE_DONE) {
         done();
     }
 }
@@ -110,15 +115,13 @@ void Board::print(void) {
     print_info(flag_count, open_count);
 
     helper_board_state(
-        is_done, is_dead, []() { print_set_foreground(color_done); },
+        board_state, []() { print_set_foreground(color_done); },
         []() { print_set_foreground(color_dead); });
 
-    print_grid(board_start, board_cursor, is_show_bomb,
-               board_size_x + 2);
+    print_grid(this, board_start, board_cursor, board_size_x + 2);
     print_reset_ansi();
 
     helper_board_state(
-        is_done, is_dead,
-        []() { std::cout << "You won!" << std::endl; },
+        board_state, []() { std::cout << "You won!" << std::endl; },
         []() { std::cout << "You died!" << std::endl; });
 }
