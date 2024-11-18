@@ -25,6 +25,18 @@ inline cell_neighbours_t cell_get_neighbour_array(cell_t* cell) {
             }};
 }
 
+void Board::do_for_grid(void (*func)(cell_t* cell)) {
+    cell_t* cell_y = board_start;
+    while (cell_y != nullptr) {
+        cell_t* cell_x = cell_y;
+        cell_y = cell_y->south;
+        while (cell_x != nullptr) {
+            func(cell_x);
+            cell_x = cell_x->east;
+        }
+    }
+}
+
 void grid_alloc_western_column(cell_t* cell_northern,
                                unsigned int size_y) {
     cell_t* cell_y = cell_northern;
@@ -59,35 +71,29 @@ void cell_populate_east(cell_t* cell) {
     }
 }
 
-void cell_recursive_populate_row_all(cell_t* cell) {
+void cell_populate(cell_t* cell) {
     cell_t* cell_west = cell->west;
+
+    if (cell_west == nullptr) {
+        return cell_populate_east(cell);
+    }
 
     if (cell_west->north != nullptr) {
         cell->north_west = cell_west->north;
         cell->north = cell_west->north->east;
     }
+
     if (cell->east != nullptr && cell_west->north != nullptr) {
         cell->north_east = cell_west->north->east->east;
     }
+
     if (cell_west->south != nullptr) {
         cell->south_west = cell_west->south;
         cell->south = cell_west->south->east;
     }
+
     if (cell->east != nullptr && cell_west->south != nullptr) {
         cell->south_east = cell_west->south->east->east;
-    }
-
-    if (cell->east != nullptr) {
-        cell_recursive_populate_row_all(cell->east);
-    }
-}
-
-void grid_populate(cell_t* cell_northern) {
-    cell_t* cell_y = cell_northern;
-    while (cell_y != nullptr) {
-        cell_populate_east(cell_y);
-        cell_recursive_populate_row_all(cell_y->east);
-        cell_y = cell_y->south;
     }
 }
 
@@ -95,7 +101,7 @@ void grid_init(cell_t* const board_start, unsigned int size_x,
                unsigned int size_y) {
     grid_alloc_western_column(board_start, size_y - 1);
     grid_alloc_column_rows(board_start, size_x - 1);
-    grid_populate(board_start);
+    board_grid_helper(board_start, cell_populate);
 }
 
 cell_t* grid_walk_random_step(cell_t* cell) {
@@ -227,4 +233,10 @@ Board::Board(const unsigned int size_x, const unsigned int size_y,
     set_cursor(board_start);
 }
 
-Board::~Board(void) {}
+Board::~Board(void) {
+    board_grid_helper(board_start, [](cell_t* cell) {
+        if (cell->west != nullptr) {
+            delete cell->west;
+        }
+    });
+}

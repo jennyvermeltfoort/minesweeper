@@ -1,6 +1,4 @@
 
-#include "stack.hh"
-
 #ifndef __GUARD_BOARD_H
 #define __GUARD_BOARD_H
 
@@ -49,7 +47,8 @@ class Board {
     Board(const unsigned int size_x, const unsigned int size_y,
           const unsigned int bomb_count);
     ~Board(void);
-    void print();
+    void do_for_grid(void(*func)(cell_t * cell));
+    void print(void);
 
     board_return_t cursor_set_open(void);
     board_return_t cursor_set_flag(void);
