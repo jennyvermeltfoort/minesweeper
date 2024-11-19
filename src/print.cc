@@ -8,6 +8,17 @@ const unsigned int color_close = 242;
 const unsigned int color_dead = 124;
 const unsigned int color_done = 40;
 
+const unsigned int CELL_WIDTH = 3;
+const unsigned int CELL_HEIGHT = 1;
+void helper_board_state(unsigned int board_state, void (*done)(),
+                        void (*dead)()) {
+    if (board_state & BOARD_STATE_DEAD) {
+        dead();
+    } else if (board_state & BOARD_STATE_DONE) {
+        done();
+    }
+}
+
 void print_edge(const unsigned int color, unsigned int size) {
     std::cout << "\033[48:5:" << +color << "m";
     while (size-- > 0) {
@@ -36,17 +47,30 @@ void print_clear_screen(void) {
     std::cout << "\033[" << 1 << ";" << 1 << "H" << std::flush;
 }
 
-void print_set_cursor(void) {
-    std::cout << "\033[" << 5 << ";" << 4 << "H" << std::flush;
+void print_set_cursor(unsigned int y, unsigned int x) {
+    std::cout << "\033[" << +x << ";" << +y << "H" << std::flush;
 }
 
-void print_info(unsigned int flag_count, unsigned int open_count) {
-    std::cout << "Flags: [" << flag_count << "]; Open: ["
-              << open_count << "]" << std::endl;
+void print_info(const board_info_t* const info,
+                const unsigned int board_size_x) {
+    std::cout << "Flags: [   ]; Open: [   ]";
+    print_set_cursor(CELL_WIDTH + 1 + 8, CELL_HEIGHT * 2);
+    std::cout << +info->flag_count << std::flush;
+    print_set_cursor(CELL_WIDTH + 1 + 21, CELL_HEIGHT * 2);
+    std::cout << +info->open_count << std::flush;
+
+    print_set_cursor(CELL_WIDTH * (board_size_x + 1) - 8,
+                     CELL_HEIGHT * 2);
+    helper_board_state(
+        info->state, []() { std::cout << " You won!" << std::flush; },
+        []() { std::cout << "You died!" << std::flush; });
 }
 
 void print_set_foreground(const unsigned int color) {
     std::cout << "\033[38:5:" << +color << "m" << std::flush;
+}
+void print_set_background(const unsigned int color) {
+    std::cout << "\033[48:5:" << +color << "m" << std::flush;
 }
 
 void print_set_inverse_fg_bg(void) {
@@ -85,47 +109,49 @@ void print_cell(const Board* board, const cell_t* const cell,
 
 void print_row(const Board* board, const cell_t* cell,
                const cell_t* const board_cursor) {
-    print_cell(color_edge, ' ');
     while (cell != nullptr) {
         print_cell(board, cell, board_cursor);
         cell = cell->east;
     }
-    print_cell(color_edge, ' ');
-    std::cout << std::endl;
 }
 
 void print_grid(const Board* board, const cell_t* cell,
-                const cell_t* const board_cursor,
-                unsigned int edge_size_x) {
-    print_edge(color_edge, edge_size_x);
+                const cell_t* const board_cursor) {
+    unsigned int index_y = 0;
     while (cell != nullptr) {
+        print_set_cursor(CELL_WIDTH + 1,
+                         CELL_HEIGHT * 4 + CELL_HEIGHT * index_y);
         print_row(board, cell, board_cursor);
         cell = cell->south;
-    }
-    print_edge(color_edge, edge_size_x);
-}
-
-void helper_board_state(unsigned int board_state, void (*done)(),
-                        void (*dead)()) {
-    if (board_state & BOARD_STATE_DEAD) {
-        dead();
-    } else if (board_state & BOARD_STATE_DONE) {
-        done();
+        index_y++;
     }
 }
 
 void Board::print(void) {
     print_clear_screen();
-    print_info(flag_count, open_count);
+
+    unsigned int size_index_y = board_size_y + 10;
+    while (size_index_y--) {
+        print_edge(color_edge, board_size_x + 2);
+    }
+    print_set_foreground(255);
+    print_set_cursor(CELL_WIDTH + 1, CELL_HEIGHT * 2);
+    print_info(&info, board_size_x);
 
     helper_board_state(
-        board_state, []() { print_set_foreground(color_done); },
+        info.state, []() { print_set_foreground(color_done); },
         []() { print_set_foreground(color_dead); });
 
-    print_grid(this, board_start, board_cursor, board_size_x + 2);
+    print_grid(this, board_start, board_cursor);
     print_reset_ansi();
 
-    helper_board_state(
-        board_state, []() { std::cout << "You won!" << std::endl; },
-        []() { std::cout << "You died!" << std::endl; });
+    print_set_foreground(255);
+    print_set_background(color_edge);
+    print_set_cursor(CELL_WIDTH + 1, CELL_HEIGHT * board_size_y + 6);
+    std::cout << "<h,j,k,l> left,down,up,right" << std::endl;
+    print_set_cursor(CELL_WIDTH + 1, CELL_HEIGHT * board_size_y + 7);
+    std::cout << "<space> open | <f> flag" << std::endl;
+    print_set_cursor(CELL_WIDTH + 1, CELL_HEIGHT * board_size_y + 8);
+    std::cout << "<p> previous" << std::endl;
+    print_set_cursor(CELL_WIDTH + 1, CELL_HEIGHT * board_size_y + 5);
 }
