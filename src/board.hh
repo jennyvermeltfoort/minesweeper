@@ -1,3 +1,4 @@
+#include <functional>
 
 #ifndef __GUARD_BOARD_H
 #define __GUARD_BOARD_H
@@ -48,15 +49,19 @@ typedef enum BOARD_RETURN_T {
     BOARD_RETURN_IS_FLAG = 16,
 } board_return_t;
 
+typedef struct BOARD_INFO_T {
+    int flag_count;
+    int open_count;
+    unsigned int state;
+} board_info_t;
+
 class Board {
    private:
     const unsigned int board_size_x;
     const unsigned int board_size_y;
     cell_t *const board_start = new cell_t;
     cell_t *board_cursor;
-    int flag_count;
-    int open_count;
-    unsigned int board_state;
+    board_info_t info;
 
     void set_cursor(cell_t *cursor);
     void grid_iterater(void (*func)(cell_t *cell));
@@ -66,9 +71,12 @@ class Board {
           const unsigned int bomb_count);
     ~Board(void);
 
-    void grid_iterater(void (*func)(const cell_t *const cell));
+    void grid_iterater(std::function<void(cell_info_t *const)> func);
 
     void print(void);
+
+    board_info_t get_info(void) const;
+    void set_info(board_info_t info);
 
     bool is_state(const board_state_e state) const;
     void set_state(const board_state_e state);

@@ -37,8 +37,17 @@ void Board::grid_iterater(void (*func)(cell_t* cell)) {
     }
 }
 
-void Board::grid_iterater(void (*func)(const cell_t* const cell)) {
-    grid_iterater(reinterpret_cast<void (*)(cell_t*)>(func));
+void Board::grid_iterater(
+    std::function<void(cell_info_t* const)> func) {
+    cell_t* cell_y = board_start;
+    while (cell_y != nullptr) {
+        cell_t* cell_x = cell_y;
+        cell_y = cell_y->south;
+        while (cell_x != nullptr) {
+            func(&cell_x->info);
+            cell_x = cell_x->east;
+        }
+    }
 }
 
 void grid_alloc_row(cell_t* cell_west, unsigned int size_x) {
@@ -189,10 +198,10 @@ board_return_t Board::cursor_set_open(void) {
     }
 
     if (!(cell->info.state & CELL_STATE_OPEN)) {
-        open_count -= cell_recursive_open(cell, nullptr);
+        info.open_count -= cell_recursive_open(cell, nullptr);
     }
 
-    if (open_count <= 0) {
+    if (info.open_count <= 0) {
         set_state(BOARD_STATE_DONE);
         set_state(BOARD_STATE_SHOW_BOMB);
         return BOARD_RETURN_STOP;
@@ -205,13 +214,13 @@ board_return_t Board::cursor_set_flag(void) {
     cell_t* const cell = board_cursor;
     if (cell_is_state(cell, CELL_STATE_FLAG)) {
         cell_unset_state(cell, CELL_STATE_FLAG);
-        flag_count++;
+        info.flag_count++;
         return BOARD_RETURN_OK;
     }
 
     if (!cell_is_state(cell, CELL_STATE_OPEN)) {
         cell_set_state(cell, CELL_STATE_FLAG);
-        flag_count--;
+        info.flag_count--;
         return BOARD_RETURN_OK;
     }
 
@@ -232,27 +241,29 @@ void cell_toggle_state(cell_t* const cell, board_state_e state) {
     cell->info.state ^= (~(state)&CELL_STATE_MASK);
 }
 
+board_info_t Board::get_info(void) const { return info; }
+void Board::set_info(board_info_t _info) { info = _info; }
 bool Board::is_state(const board_state_e state) const {
-    return (board_state & ((state)&BOARD_STATE_MASK));
+    return (info.state & ((state)&BOARD_STATE_MASK));
 }
 void Board::set_state(const board_state_e state) {
-    board_state |= ((state)&BOARD_STATE_MASK);
+    info.state |= ((state)&BOARD_STATE_MASK);
 }
 void Board::unset_state(const board_state_e state) {
-    board_state &= (~(state)&CELL_STATE_MASK);
+    info.state &= (~(state)&CELL_STATE_MASK);
 }
 void Board::toggle_state(const board_state_e state) {
-    board_state ^= ((state)&CELL_STATE_MASK);
+    info.state ^= ((state)&CELL_STATE_MASK);
 }
 
 Board::Board(const unsigned int size_x, const unsigned int size_y,
              const unsigned int bomb_count)
-    : board_size_x(size_x),
-      board_size_y(size_y),
-      flag_count(bomb_count),
-      open_count(size_x * size_y - bomb_count),
-      board_state(BOARD_STATE_NORMAL) {
+    : board_size_x(size_x), board_size_y(size_y) {
     std::srand(std::time(nullptr));
+
+    info.flag_count = bomb_count;
+    info.open_count = size_x * size_y - bomb_count;
+    info.state = BOARD_STATE_NORMAL;
 
     grid_alloc(board_start, board_size_y - 1, board_size_x - 1);
     grid_iterater(cell_populate);

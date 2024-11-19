@@ -6,35 +6,35 @@
 
 typedef struct CELL_ENCODED_T cell_encoded_t;
 struct CELL_ENCODED_T {
-    cell_info_t * board_encoded;
-    cell_encoded_t * next_x;
-    cell_encoded_t * next_y;
+    cell_info_t info;
+    cell_encoded_t* next;
 };
 
-class BoardEncoded {
-    private:
-    cell_encoded_t * board_encoded_start;
+class BoardEncoder {
+   private:
+    cell_encoded_t* start = nullptr;
+    board_info_t info;
 
-    public:
-    void encode(cell_t * board_start);
-    void decode(cell_t * board_start);
+   public:
+    bool is_encoded(void);
+    void encode(Board* board);
+    void decode(Board* board);
 };
 
+typedef struct BOARD_STACK_CELL_T board_stack_cell_t;
+struct BOARD_STACK_CELL_T {
+    BoardEncoder* encoded;
+    board_stack_cell_t* next;
+};
 
 class BoardStack {
-    private:
-        BoardEncoded *board_stack;
+   private:
+    board_stack_cell_t* start;
 
-    public:
-        void push(BoardEncoded*);
-        BoardEncoded* pop(void);
-        bool is_empty(void);
+   public:
+    void push(BoardEncoder* encoded);
+    BoardEncoder* pop(void);
+    bool is_empty(void);
 };
 
-
-
-
-
-
-
-#endif // __GUARD_STACK_H
+#endif  // __GUARD_STACK_H

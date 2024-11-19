@@ -36,6 +36,10 @@ void print_clear_screen(void) {
     std::cout << "\033[" << 1 << ";" << 1 << "H" << std::flush;
 }
 
+void print_set_cursor(void) {
+    std::cout << "\033[" << 5 << ";" << 4 << "H" << std::flush;
+}
+
 void print_info(unsigned int flag_count, unsigned int open_count) {
     std::cout << "Flags: [" << flag_count << "]; Open: ["
               << open_count << "]" << std::endl;
