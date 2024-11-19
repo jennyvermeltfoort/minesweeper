@@ -15,11 +15,13 @@ BoardEncoded::BoardEncoded(Board *board) {
 }
 
 void BoardEncoded::decode(Board *board) {
-    cell_encoded_t *cell = start;
     const board_size_t size = board->get_info().size;
+    cell_encoded_t *cell = start;
+
     if (info.size.x != size.x || info.size.y != size.y) {
         return;
     }
+
     board->set_status(info.status);
     std::function<void(cell_info_t *const)> func =
         [&cell](cell_info_t *const info) {
@@ -28,13 +30,12 @@ void BoardEncoded::decode(Board *board) {
             cell = cell->next;
         };
     board->grid_iterater(func, nullptr);
-    start = nullptr;
     delete this;
 }
 
 BoardEncoded::~BoardEncoded(void) {
     cell_encoded_t *cell = start;
-    while (cell->next != nullptr) {
+    while (cell != nullptr) {
         cell_encoded_t *prev = cell;
         cell = cell->next;
         delete prev;

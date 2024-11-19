@@ -26,7 +26,8 @@ inline cell_neighbours_t cell_get_neighbour_array(cell_t* cell) {
             }};
 }
 
-void Board::grid_iterater(void (*func)(cell_t* cell)) {
+void grid_iterater_board(cell_t* board_start,
+                         void (*func)(cell_t* cell)) {
     cell_t* cell_y = board_start;
     while (cell_y != nullptr) {
         cell_t* cell_x = cell_y;
@@ -249,23 +250,17 @@ void cell_info_unset_state(cell_info_t* const info,
                            const cell_state_e state) {
     info->state &= (~(state)&CELL_STATE_MASK);
 }
-void cell_info_toggle_state(cell_info_t* const info,
-                            board_state_e state) {
-    info->state ^= (~(state)&CELL_STATE_MASK);
-}
 
 board_info_t Board::get_info(void) const { return board_info; }
 void Board::set_status(board_status_t _status) {
     board_info.status = _status;
 }
+
 bool Board::is_state(const board_state_e state) const {
     return (board_info.status.state & ((state)&BOARD_STATE_MASK));
 }
 void Board::set_state(const board_state_e state) {
     board_info.status.state |= ((state)&BOARD_STATE_MASK);
-}
-void Board::unset_state(const board_state_e state) {
-    board_info.status.state &= (~(state)&CELL_STATE_MASK);
 }
 void Board::toggle_state(const board_state_e state) {
     board_info.status.state ^= ((state)&CELL_STATE_MASK);
@@ -277,19 +272,18 @@ Board::Board(const unsigned int size_x, const unsigned int size_y,
           board_size_t{size_x, size_y},
           board_status_t{
               static_cast<int>(bomb_count),
-              static_cast<int>(size_x * size_y - bomb_count),
-              BOARD_STATE_NONE},
+              static_cast<int>(size_x * size_y - bomb_count), 0},
       }) {
     std::srand(std::time(nullptr));
     grid_alloc(board_start, board_info.size.y - 1,
                board_info.size.x - 1);
-    grid_iterater(cell_populate);
+    grid_iterater_board(board_start, cell_populate);
     bomb_init(board_start, board_info.size.x, bomb_count);
     set_cursor(board_start);
 }
 
 Board::~Board(void) {
-    grid_iterater([](cell_t* cell) {
+    grid_iterater_board(board_start, [](cell_t* cell) {
         if (cell->west != nullptr) {
             delete cell->west;
         }

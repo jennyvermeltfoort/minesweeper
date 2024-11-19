@@ -4,7 +4,6 @@
 #define __GUARD_BOARD_H
 
 typedef enum CELL_STATE_E {
-    CELL_STATE_NONE = 0,
     CELL_STATE_FLAG = 1,
     CELL_STATE_OPEN = 2,
     CELL_STATE_BOMB = 4,
@@ -12,7 +11,6 @@ typedef enum CELL_STATE_E {
 } cell_state_e;
 
 typedef enum BOARD_STATE_E {
-    BOARD_STATE_NONE = 0,
     BOARD_STATE_SHOW_BOMB = 1,
     BOARD_STATE_DEAD = 2,
     BOARD_STATE_DONE = 4,
@@ -42,8 +40,6 @@ void cell_info_set_state(cell_info_t *const info,
                          const cell_state_e state);
 void cell_info_unset_state(cell_info_t *const info,
                            const cell_state_e state);
-void cell_info_toggle_state(cell_info_t *const info,
-                            const cell_state_e state);
 
 typedef struct BOARD_SIZE_T {
     unsigned int x;
@@ -66,7 +62,6 @@ class Board {
     board_info_t board_info;
 
     void set_cursor(cell_t *cursor);
-    void grid_iterater(void (*func)(cell_t *cell));
 
    public:
     Board(const unsigned int size_x, const unsigned int size_y,
@@ -82,7 +77,6 @@ class Board {
 
     bool is_state(const board_state_e state) const;
     void set_state(const board_state_e state);
-    void unset_state(const board_state_e state);
     void toggle_state(const board_state_e state);
 
     void cursor_set_open(void);
@@ -91,6 +85,8 @@ class Board {
     void cursor_move_south(void);
     void cursor_move_west(void);
     void cursor_move_east(void);
+
+    // the info pointer should be a member of a cell.
     bool is_cell_info_cursor(const cell_info_t *const info) const;
 };
 

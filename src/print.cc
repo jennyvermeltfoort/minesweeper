@@ -3,11 +3,11 @@
 
 #include "print.hh"
 
-const unsigned int color_frame = 240;
-const unsigned int color_open = 241;
-const unsigned int color_close = 242;
-const unsigned int color_dead = 124;
-const unsigned int color_done = 40;
+const unsigned int color_frame_bg = 240;
+const unsigned int color_open_bg = 241;
+const unsigned int color_close_bg = 242;
+const unsigned int color_dead_bg = 124;
+const unsigned int color_done_bg = 40;
 const unsigned int color_info_fg = 255;
 
 const unsigned int CELL_WIDTH = 3;
@@ -17,8 +17,7 @@ const unsigned int FRAME_SIZE_INFO_Y = 3;
 const unsigned int FRAME_SIZE_INPUT_Y = 6;
 
 void print_reset_ansi(void) {
-    std::cout << "\033[0m"
-              << "\033[39;49m" << std::flush;
+    std::cout << "\033[0;39;49m" << std::flush;
 }
 
 void print_cell(const unsigned int color, char c) {
@@ -33,7 +32,6 @@ void print_cell(const unsigned int color, unsigned int n) {
 
 void print_clear_screen(void) {
     std::cout << "\033[2J" << std::flush;
-    std::cout << "\033[" << 1 << ";" << 1 << "H" << std::flush;
 }
 
 void print_set_cursor(unsigned int y, unsigned int x) {
@@ -43,7 +41,6 @@ void print_set_cursor(unsigned int y, unsigned int x) {
 void print_set_cursor_input(board_info_t* info) {
     const unsigned int START_INPUT_Y =
         CELL_HEIGHT * info->size.y + FRAME_SIZE_INFO_Y + 1;
-
     print_set_cursor(FRAME_POS_START_TEXT,
                      START_INPUT_Y + CELL_HEIGHT * 1);
 }
@@ -61,13 +58,6 @@ void print_set_inverse_fg_bg(void) {
 
 void print_unset_inverse_fg_bg(void) {
     std::cout << "\033[27m" << std::flush;
-}
-
-void print_edge(unsigned int size) {
-    while (size-- > 0) {
-        std::cout << "   " << std::flush;
-    }
-    std::cout << std::endl;
 }
 
 void helper_board_state(unsigned int board_state, void (*done)(),
@@ -109,17 +99,17 @@ void print_cell(const Board* board, const cell_info_t* const info) {
     }
 
     if (cell_info_is_state(info, CELL_STATE_FLAG)) {
-        print_cell(color_close, 'F');
+        print_cell(color_close_bg, 'F');
     } else if (cell_info_is_state(info, CELL_STATE_BOMB) &&
                board->is_state(BOARD_STATE_SHOW_BOMB)) {
-        print_cell(color_open, 'X');
+        print_cell(color_open_bg, 'X');
     } else if (cell_info_is_state(info, CELL_STATE_OPEN) &&
                info->bomb_count != 0) {
-        print_cell(color_open, +info->bomb_count);
+        print_cell(color_open_bg, +info->bomb_count);
     } else if (cell_info_is_state(info, CELL_STATE_OPEN)) {
-        print_cell(color_open, ' ');
+        print_cell(color_open_bg, ' ');
     } else {
-        print_cell(color_close, ' ');
+        print_cell(color_close_bg, ' ');
     }
     std::cout << std::flush;
 
@@ -128,11 +118,18 @@ void print_cell(const Board* board, const cell_info_t* const info) {
     }
 }
 
+void print_edge(unsigned int size) {
+    while (size-- > 0) {
+        std::cout << "   " << std::flush;
+    }
+}
+
 void print_frame(const board_info_t* const info) {
     unsigned int size_index_y =
         info->size.y + FRAME_SIZE_INFO_Y + FRAME_SIZE_INPUT_Y;
     while (size_index_y--) {
         print_edge(info->size.x + 2);
+        std::cout << std::endl;
     }
 }
 
@@ -153,8 +150,8 @@ void print_grid(Board* board) {
     unsigned int index_y = 0;
     helper_board_state(
         board->get_info().status.state,
-        []() { print_set_foreground(color_done); },
-        []() { print_set_foreground(color_dead); });
+        []() { print_set_foreground(color_done_bg); },
+        []() { print_set_foreground(color_dead_bg); });
 
     std::function<void(cell_info_t* const)> func_x =
         [&board](cell_info_t* const info) {
@@ -172,7 +169,7 @@ void print_grid(Board* board) {
 void print_init(Board* board) {
     board_info_t info = board->get_info();
     print_set_foreground(color_info_fg);
-    print_set_background(color_frame);
+    print_set_background(color_frame_bg);
     print_clear_screen();
     print_frame(&info);
     print_instructions(&info);
@@ -183,11 +180,11 @@ void BoardPrinter::print(void) {
     print_info(&info);
     print_grid(board);
     print_set_foreground(color_info_fg);
-    print_set_background(color_frame);
+    print_set_background(color_frame_bg);
     print_set_cursor_input(&info);
 }
 
 BoardPrinter::BoardPrinter(Board* _board) : board(_board) {
-    // print_init(board);
-    // print();
+    print_init(board);
+    print();
 }
