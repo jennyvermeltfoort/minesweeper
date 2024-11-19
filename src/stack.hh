@@ -10,20 +10,20 @@ struct CELL_ENCODED_T {
     cell_encoded_t* next;
 };
 
-class BoardEncoder {
+class BoardEncoded {
    private:
     cell_encoded_t* start = nullptr;
     board_info_t info;
 
    public:
-    bool is_encoded(void);
-    void encode(Board* board);
+    BoardEncoded(Board* board);
+    ~BoardEncoded(void);
     void decode(Board* board);
 };
 
 typedef struct BOARD_STACK_CELL_T board_stack_cell_t;
 struct BOARD_STACK_CELL_T {
-    BoardEncoder* encoded;
+    BoardEncoded* encoded;
     board_stack_cell_t* next;
 };
 
@@ -32,8 +32,9 @@ class BoardStack {
     board_stack_cell_t* start;
 
    public:
-    void push(BoardEncoder* encoded);
-    BoardEncoder* pop(void);
+    ~BoardStack(void);
+    void push(BoardEncoded* encoded);
+    BoardEncoded* pop(void);
     bool is_empty(void);
 };
 

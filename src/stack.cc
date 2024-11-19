@@ -1,6 +1,6 @@
 #include "stack.hh"
 
-void BoardEncoder::encode(Board *board) {
+BoardEncoded::BoardEncoded(Board *board) {
     info = board->get_info();
     start = new cell_encoded_t;
     cell_encoded_t *cell = start;
@@ -11,39 +11,45 @@ void BoardEncoder::encode(Board *board) {
             cell->next = new cell_encoded_t;
             cell = cell->next;
         };
-    board->grid_iterater(func);
+    board->grid_iterater(func, nullptr);
 }
 
-void BoardEncoder::decode(Board *board) {
+void BoardEncoded::decode(Board *board) {
     cell_encoded_t *cell = start;
-    board->set_info(info);
+    const board_size_t size = board->get_info().size;
+    if (info.size.x != size.x || info.size.y != size.y) {
+        return;
+    }
+    board->set_status(info.status);
     std::function<void(cell_info_t *const)> func =
         [&cell](cell_info_t *const info) {
-            cell_encoded_t *prev = cell;
             info->state = cell->info.state;
             info->bomb_count = cell->info.bomb_count;
             cell = cell->next;
-            delete prev;
         };
-    board->grid_iterater(func);
+    board->grid_iterater(func, nullptr);
     start = nullptr;
+    delete this;
 }
 
-bool BoardEncoder::is_encoded(void) { return (start != nullptr); }
-
-void BoardStack::push(BoardEncoder *encoded) {
-    if (!encoded->is_encoded()) {
-        return;
+BoardEncoded::~BoardEncoded(void) {
+    cell_encoded_t *cell = start;
+    while (cell->next != nullptr) {
+        cell_encoded_t *prev = cell;
+        cell = cell->next;
+        delete prev;
     }
+}
 
+void BoardStack::push(BoardEncoded *encoded) {
     board_stack_cell_t *cell = new board_stack_cell_t;
     cell->encoded = encoded;
     cell->next = start;
     start = cell;
 }
 
-BoardEncoder *BoardStack::pop(void) {
-    BoardEncoder *encoded = start->encoded;
+BoardEncoded *BoardStack::pop(void) {
+    BoardEncoded *encoded = start->encoded;
     board_stack_cell_t *prev = start;
     start = start->next;
     delete prev;
@@ -51,3 +57,10 @@ BoardEncoder *BoardStack::pop(void) {
 }
 
 bool BoardStack::is_empty(void) { return (start == nullptr); }
+
+BoardStack::~BoardStack(void) {
+    while (!is_empty()) {
+        BoardEncoded *encoded = pop();
+        delete encoded;
+    }
+}

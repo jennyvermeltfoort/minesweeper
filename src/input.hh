@@ -1,19 +1,21 @@
 
 #include "board.hh"
+#include "print.hh"
 #include "stack.hh"
 
 #ifndef __GUARD_INPUT_H
 #define __GUARD_INPUT_H
 
-class BoardInputHandler {
+class BoardHandler {
    private:
     Board* board;
+    BoardPrinter* printer;
     BoardStack* stack;
 
    public:
-    BoardInputHandler(Board* _board);
-    ~BoardInputHandler(void);
-    void parse_input(char c, bool* _is_end);
+    BoardHandler(Board* const _board);
+    ~BoardHandler(void);
+    void parse_input(const char c, bool* const _is_end);
 };
 
 #endif  // __GUARD_INPUT_H
