@@ -3,44 +3,24 @@
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
+using namespace std;
 
 #define NEIGHBOUR_COUNT 8
 typedef struct CELL_NEIGHBOURS_T {
     cell_t* array[NEIGHBOUR_COUNT];
 } cell_neighbours_t;
 
-inline int16_t min(int16_t n1, int16_t n2) {
-    return (n1 < n2) ? n1 : n2;
-}
-
+inline int16_t min(int16_t n1, int16_t n2) { return (n1 < n2) ? n1 : n2; }
 inline cell_neighbours_t cell_get_neighbour_array(cell_t* cell) {
-    return {.array = {
-                cell->north_west,
-                cell->north,
-                cell->north_east,
-                cell->west,
-                cell->east,
-                cell->south_west,
-                cell->south,
-                cell->south_east,
-            }};
+    return {.array = {cell->north_west, cell->north, cell->north_east,
+                      cell->west, cell->east, cell->south_west, cell->south,
+                      cell->south_east}};
+}
+cell_t* get_cell_from_info(cell_info_t* info) {
+    return reinterpret_cast<cell_t*>(info - offsetof(cell_t, info));
 }
 
-void grid_iterater_board(cell_t* board_start,
-                         void (*func)(cell_t* cell)) {
-    cell_t* cell_y = board_start;
-    while (cell_y != nullptr) {
-        cell_t* cell_x = cell_y;
-        cell_y = cell_y->south;
-        while (cell_x != nullptr) {
-            func(cell_x);
-            cell_x = cell_x->east;
-        }
-    }
-}
-
-void Board::grid_iterater(
-    std::function<void(cell_info_t* const info)>& func) {
+void Board::grid_iterater(function<void(cell_info_t* const info)> func) {
     cell_t* cell_y = board_start;
     while (cell_y != nullptr) {
         cell_t* cell_x = cell_y;
@@ -53,8 +33,8 @@ void Board::grid_iterater(
 }
 
 void Board::grid_iterater(
-    std::function<void(const cell_info_t* const info)> func_x,
-    std::function<void(const cell_info_t* const info)> func_y) const {
+    function<void(const cell_info_t* const info)> func_x,
+    function<void(const cell_info_t* const info)> func_y) const {
     cell_t* cell_y = board_start;
     while (cell_y != nullptr) {
         cell_t* cell_x = cell_y;
@@ -105,7 +85,6 @@ void cell_populate_east(cell_t* cell) {
 void cell_populate_north(cell_t* cell) {
     cell->north_west = cell->west->north;
     cell->north = cell->west->north_east;
-
     if (cell->east != nullptr) {
         cell->north_east = cell->west->north_east->east;
     }
@@ -114,13 +93,13 @@ void cell_populate_north(cell_t* cell) {
 void cell_populate_south(cell_t* cell) {
     cell->south_west = cell->west->south;
     cell->south = cell->west->south_east;
-
     if (cell->east != nullptr) {
         cell->south_east = cell->west->south_east->east;
     }
 }
 
-void cell_populate(cell_t* cell) {
+void cell_populate(cell_info_t* const info) {
+    cell_t* cell = get_cell_from_info(info);
     if (cell->west == nullptr) {  // most western column
         return cell_populate_east(cell);
     }
@@ -135,15 +114,10 @@ void cell_populate(cell_t* cell) {
 cell_t* grid_walk_random_step(cell_t* cell) {
     cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
     unsigned int random_int = rand() % 8;
-
     do {
         cell = neighbours.array[random_int];
-        random_int = (random_int + 5) %
-                     8;  // increment by 5 to find the
-                         // a neighbour that is not a
-                         // nullptr in a minimum of two steps.
+        random_int = (random_int + 5) % 8;
     } while (cell == nullptr);
-
     return cell;
 }
 
@@ -171,66 +145,40 @@ void bomb_init(cell_t* const board_start, unsigned int max_step_size,
 }
 
 bool Board::is_cell_info_cursor(const cell_info_t* const info) const {
-    const cell_t* const cell = reinterpret_cast<const cell_t* const>(
-        info - offsetof(cell_t, info));
+    const cell_t* const cell =
+        get_cell_from_info(const_cast<cell_info_t*>(info));
     return (cell == board_cursor);
 }
 
-void Board::set_cursor(cell_t* cursor) {
-    if (cursor != nullptr) {
-        board_cursor = cursor;
-    }
-}
-void Board::cursor_move_north(void) {
-    set_cursor(board_cursor->north);
-}
-void Board::cursor_move_south(void) {
-    set_cursor(board_cursor->south);
-}
-void Board::cursor_move_west(void) { set_cursor(board_cursor->west); }
-void Board::cursor_move_east(void) { set_cursor(board_cursor->east); }
-
-void Board::toggle_show_bomb(void) {
-    board_info.status.show_bomb = !board_info.status.show_bomb;
-}
-
 int cell_recursive_open(cell_t* cell) {
-    int counter_opened = 1;
+    int open_count = 1;
     cell->info.is_open = true;
-
     if (cell->info.bomb_count != 0) {
-        return counter_opened;
+        return open_count;
     }
-
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
         cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
         if (neighbour != nullptr && !neighbour->info.is_open) {
-            counter_opened += cell_recursive_open(neighbour);
+            open_count += cell_recursive_open(neighbour);
         }
     }
-
-    return counter_opened;
+    return open_count;
 }
 
 void Board::cursor_set_open(void) {
     cell_info_t* const info = &board_cursor->info;
-
     if (info->is_flag || board_info.status.is_dead ||
         board_info.status.is_done) {
         return;
     }
-
     if (info->is_bomb) {
         board_info.status.is_dead = true;
         board_info.status.show_bomb = true;
         return;
     }
-
     if (!info->is_open) {
-        board_info.status.open_count -=
-            cell_recursive_open(board_cursor);
+        board_info.status.open_count -= cell_recursive_open(board_cursor);
     }
-
     if (board_info.status.open_count <= 0) {
         board_info.status.is_done = true;
         board_info.status.show_bomb = true;
@@ -239,11 +187,9 @@ void Board::cursor_set_open(void) {
 
 void Board::cursor_set_flag(void) {
     cell_info_t* const info = &board_cursor->info;
-
     if (board_info.status.is_dead || board_info.status.is_done) {
         return;
     }
-
     if (info->is_flag) {
         info->is_flag = true;
         board_info.status.flag_count++;
@@ -254,29 +200,47 @@ void Board::cursor_set_flag(void) {
 }
 
 board_info_t Board::get_info(void) const { return board_info; }
-void Board::set_status(board_status_t _status) {
-    board_info.status = _status;
+void Board::set_status(board_status_t _status) { board_info.status = _status; }
+
+void set_cursor(cell_t** board_cursor, cell_t* cursor) {
+    if (cursor != nullptr && board_cursor != nullptr) {
+        *board_cursor = cursor;
+    }
+}
+void Board::cursor_move_north(void) {
+    set_cursor(&board_cursor, board_cursor->north);
+}
+void Board::cursor_move_south(void) {
+    set_cursor(&board_cursor, board_cursor->south);
+}
+void Board::cursor_move_west(void) {
+    set_cursor(&board_cursor, board_cursor->west);
+}
+void Board::cursor_move_east(void) {
+    set_cursor(&board_cursor, board_cursor->east);
+}
+void Board::toggle_show_bomb(void) {
+    board_info.status.show_bomb = !board_info.status.show_bomb;
 }
 
 Board::Board(const unsigned int size_x, const unsigned int size_y,
              const unsigned int bomb_count)
     : board_info({
           board_size_t{size_x, size_y},
-          board_status_t{
-              static_cast<int>(bomb_count),
-              static_cast<int>(size_x * size_y - bomb_count), false,
-              false, false},
+          board_status_t{static_cast<int>(bomb_count),
+                         static_cast<int>(size_x * size_y - bomb_count), false,
+                         false, false},
       }) {
-    std::srand(std::time(nullptr));
-    grid_alloc(board_start, board_info.size.y - 1,
-               board_info.size.x - 1);
-    grid_iterater_board(board_start, cell_populate);
+    srand(time(nullptr));
+    grid_alloc(board_start, board_info.size.y - 1, board_info.size.x - 1);
+    grid_iterater(cell_populate);
     bomb_init(board_start, board_info.size.x, bomb_count);
-    set_cursor(board_start);
+    set_cursor(&board_cursor, board_start);
 }
 
 Board::~Board(void) {
-    grid_iterater_board(board_start, [](cell_t* cell) {
+    grid_iterater([](cell_info_t* const info) {
+        cell_t* cell = get_cell_from_info(info);
         if (cell->west != nullptr) {
             delete cell->west;
         }

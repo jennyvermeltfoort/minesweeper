@@ -44,14 +44,12 @@ class Board {
     cell_t *board_cursor;
     board_info_t board_info;
 
-    void set_cursor(cell_t *cursor);
-
    public:
     Board(const unsigned int size_x, const unsigned int size_y,
           const unsigned int bomb_count);
     ~Board(void);
 
-    void grid_iterater(std::function<void(cell_info_t *const)> &func);
+    void grid_iterater(std::function<void(cell_info_t *const)> func);
     void grid_iterater(
         std::function<void(const cell_info_t *const)> func_x,
         std::function<void(const cell_info_t *const)> func_y) const;

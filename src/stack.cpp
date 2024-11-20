@@ -1,7 +1,6 @@
 #include "stack.hpp"
 
-BoardEncoded::BoardEncoded(const Board &board)
-    : info(board.get_info()) {
+BoardEncoded::BoardEncoded(const Board &board) : info(board.get_info()) {
     start = new cell_encoded_t;
     cell_encoded_t *cell = start;
     std::function<void(const cell_info_t *const)> func =
@@ -16,11 +15,9 @@ BoardEncoded::BoardEncoded(const Board &board)
 void BoardEncoded::decode(Board &board) {
     const board_size_t size = board.get_info().size;
     cell_encoded_t *cell = start;
-
     if (info.size.x != size.x || info.size.y != size.y) {
         return;
     }
-
     board.set_status(info.status);
     std::function<void(cell_info_t *const)> func =
         [&cell](cell_info_t *const info) {

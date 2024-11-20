@@ -7,17 +7,17 @@
 #include "handler.hpp"
 #include "print.hpp"
 #include "stack.hpp"
+using namespace std;
 
 typedef struct ARG_T {
     unsigned int width;
     unsigned int height;
     unsigned int bomb_count;
-    unsigned int dry;
 } arg_t;
 
 arg_t parse_args(int argc, const char* argv[]) {
-    arg_t args = {0};
-    static std::unordered_map<std::string, unsigned int*> map_args = {
+    arg_t args = {};
+    static unordered_map<string, unsigned int*> map_args = {
         {"-w", &args.width},      {"--width", &args.width},
         {"-h", &args.height},     {"--height", &args.height},
         {"-b", &args.bomb_count}, {"--bomb_count", &args.bomb_count},
@@ -37,9 +37,9 @@ arg_t parse_args(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
     arg_t args = parse_args(argc, argv);
     if (!args.width || !args.height || !args.bomb_count) {
-        std::cout << "Usage: [-w,--width] <num> [-h,--height] <num> "
-                     "[-b,--bomb_count] <num>"
-                  << std::endl;
+        cout << "Usage: [-w,--width] <num> [-h,--height] <num> "
+                "[-b,--bomb_count] <num>"
+             << endl;
         return 1;
     }
     Board board = Board(args.width, args.height, args.bomb_count);
@@ -47,7 +47,7 @@ int main(int argc, const char* argv[]) {
     bool is_end = false;
 
     while (is_end == false) {
-        char c = std::cin.get();
+        char c = cin.get();
         input_handler.parse_input(c, &is_end);
     }
 }
