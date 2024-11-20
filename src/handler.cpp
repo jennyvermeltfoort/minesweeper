@@ -58,8 +58,6 @@ void BoardHandler::parse_input(const char c, bool* const is_end) {
     printer.print();
 }
 
-void BoardHandler::print_frame(void)  { printer.print_frame(); }
-
 BoardHandler::BoardHandler(Board& _board)
     : board(_board),
       stack(BoardStack()),

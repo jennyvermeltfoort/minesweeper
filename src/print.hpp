@@ -11,7 +11,6 @@ class BoardPrinter {
    public:
     explicit BoardPrinter(const Board& board);
     void print(void);
-    void print_frame(void);
 };
 
 #endif  // __GUARD_PRINT_H

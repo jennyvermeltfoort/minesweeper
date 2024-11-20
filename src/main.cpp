@@ -21,7 +21,6 @@ arg_t parse_args(int argc, const char* argv[]) {
         {"-w", &args.width},      {"--width", &args.width},
         {"-h", &args.height},     {"--height", &args.height},
         {"-b", &args.bomb_count}, {"--bomb_count", &args.bomb_count},
-        {"-d", &args.dry},        {"--dry", &args.dry},
     };
 
     while (argc > 1) {
@@ -39,7 +38,7 @@ int main(int argc, const char* argv[]) {
     arg_t args = parse_args(argc, argv);
     if (!args.width || !args.height || !args.bomb_count) {
         std::cout << "Usage: [-w,--width] <num> [-h,--height] <num> "
-                     "[-b,--bomb_count] <num> [-d,--debug] <num>"
+                     "[-b,--bomb_count] <num>"
                   << std::endl;
         return 1;
     }
@@ -47,11 +46,6 @@ int main(int argc, const char* argv[]) {
     BoardHandler input_handler = BoardHandler(board);
     bool is_end = false;
 
-    if (args.dry > 0) {
-        return 1;
-    }
-
-    input_handler.print_frame();
     while (is_end == false) {
         char c = std::cin.get();
         input_handler.parse_input(c, &is_end);
