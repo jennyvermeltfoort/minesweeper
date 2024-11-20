@@ -1,4 +1,4 @@
-#include "board.hh"
+#include "board.hpp"
 
 #include <cstddef>
 #include <cstdlib>
@@ -40,8 +40,21 @@ void grid_iterater_board(cell_t* board_start,
 }
 
 void Board::grid_iterater(
-    std::function<void(cell_info_t* const info)> func_x,
-    std::function<void(cell_info_t* const info)> func_y) {
+    std::function<void(cell_info_t* const info)>& func) {
+    cell_t* cell_y = board_start;
+    while (cell_y != nullptr) {
+        cell_t* cell_x = cell_y;
+        cell_y = cell_y->south;
+        while (cell_x != nullptr) {
+            func(&cell_x->info);
+            cell_x = cell_x->east;
+        }
+    }
+}
+
+void Board::grid_iterater(
+    std::function<void(const cell_info_t* const info)> func_x,
+    std::function<void(const cell_info_t* const info)> func_y) const {
     cell_t* cell_y = board_start;
     while (cell_y != nullptr) {
         cell_t* cell_x = cell_y;
@@ -142,7 +155,7 @@ void cell_set_bomb(cell_t* cell) {
             neighbour->info.bomb_count++;
         }
     }
-    cell_info_set_state(&cell->info, CELL_STATE_BOMB);
+    cell->info.is_bomb = true;
 }
 
 void bomb_init(cell_t* const board_start, unsigned int max_step_size,
@@ -150,8 +163,7 @@ void bomb_init(cell_t* const board_start, unsigned int max_step_size,
     cell_t* cell = board_start;
     while (bomb_count-- > 0) {
         unsigned int steps = rand() % max_step_size;
-        while (cell_info_is_state(&cell->info, CELL_STATE_BOMB) ||
-               steps-- > 0) {
+        while (cell->info.is_bomb || steps-- > 0) {
             cell = grid_walk_random_step(cell);
         }
         cell_set_bomb(cell);
@@ -178,9 +190,13 @@ void Board::cursor_move_south(void) {
 void Board::cursor_move_west(void) { set_cursor(board_cursor->west); }
 void Board::cursor_move_east(void) { set_cursor(board_cursor->east); }
 
+void Board::toggle_show_bomb(void) {
+    board_info.status.show_bomb = !board_info.status.show_bomb;
+}
+
 int cell_recursive_open(cell_t* cell) {
     int counter_opened = 1;
-    cell->info.state |= CELL_STATE_OPEN;
+    cell->info.is_open = true;
 
     if (cell->info.bomb_count != 0) {
         return counter_opened;
@@ -188,8 +204,7 @@ int cell_recursive_open(cell_t* cell) {
 
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
         cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
-        if (neighbour != nullptr &&
-            !(neighbour->info.state & CELL_STATE_OPEN)) {
+        if (neighbour != nullptr && !neighbour->info.is_open) {
             counter_opened += cell_recursive_open(neighbour);
         }
     }
@@ -200,70 +215,47 @@ int cell_recursive_open(cell_t* cell) {
 void Board::cursor_set_open(void) {
     cell_info_t* const info = &board_cursor->info;
 
-    if (cell_info_is_state(info, CELL_STATE_FLAG) ||
-        is_state(BOARD_STATE_DEAD) || is_state(BOARD_STATE_DONE)) {
+    if (info->is_flag || board_info.status.is_dead ||
+        board_info.status.is_done) {
         return;
     }
 
-    if (cell_info_is_state(info, CELL_STATE_BOMB)) {
-        set_state(BOARD_STATE_DEAD);
-        set_state(BOARD_STATE_SHOW_BOMB);
+    if (info->is_bomb) {
+        board_info.status.is_dead = true;
+        board_info.status.show_bomb = true;
         return;
     }
 
-    if (!(cell_info_is_state(info, CELL_STATE_OPEN))) {
+    if (!info->is_open) {
         board_info.status.open_count -=
             cell_recursive_open(board_cursor);
     }
 
     if (board_info.status.open_count <= 0) {
-        set_state(BOARD_STATE_DONE);
-        set_state(BOARD_STATE_SHOW_BOMB);
+        board_info.status.is_done = true;
+        board_info.status.show_bomb = true;
     }
 }
 
 void Board::cursor_set_flag(void) {
     cell_info_t* const info = &board_cursor->info;
 
-    if (is_state(BOARD_STATE_DEAD) || is_state(BOARD_STATE_DONE)) {
+    if (board_info.status.is_dead || board_info.status.is_done) {
         return;
     }
 
-    if (cell_info_is_state(info, CELL_STATE_FLAG)) {
-        cell_info_unset_state(info, CELL_STATE_FLAG);
+    if (info->is_flag) {
+        info->is_flag = true;
         board_info.status.flag_count++;
-    } else if (!cell_info_is_state(info, CELL_STATE_OPEN)) {
-        cell_info_set_state(info, CELL_STATE_FLAG);
+    } else if (!info->is_open) {
+        info->is_flag = false;
         board_info.status.flag_count--;
     }
-}
-
-bool cell_info_is_state(const cell_info_t* const info,
-                        const cell_state_e state) {
-    return (info->state & ((state)&CELL_STATE_MASK));
-}
-void cell_info_set_state(cell_info_t* const info,
-                         const cell_state_e state) {
-    info->state |= ((state)&CELL_STATE_MASK);
-}
-void cell_info_unset_state(cell_info_t* const info,
-                           const cell_state_e state) {
-    info->state &= (~(state)&CELL_STATE_MASK);
 }
 
 board_info_t Board::get_info(void) const { return board_info; }
 void Board::set_status(board_status_t _status) {
     board_info.status = _status;
-}
-
-bool Board::is_state(const board_state_e state) const {
-    return (board_info.status.state & ((state)&BOARD_STATE_MASK));
-}
-void Board::set_state(const board_state_e state) {
-    board_info.status.state |= ((state)&BOARD_STATE_MASK);
-}
-void Board::toggle_state(const board_state_e state) {
-    board_info.status.state ^= ((state)&CELL_STATE_MASK);
 }
 
 Board::Board(const unsigned int size_x, const unsigned int size_y,
@@ -272,7 +264,8 @@ Board::Board(const unsigned int size_x, const unsigned int size_y,
           board_size_t{size_x, size_y},
           board_status_t{
               static_cast<int>(bomb_count),
-              static_cast<int>(size_x * size_y - bomb_count), 0},
+              static_cast<int>(size_x * size_y - bomb_count), false,
+              false, false},
       }) {
     std::srand(std::time(nullptr));
     grid_alloc(board_start, board_info.size.y - 1,
@@ -286,6 +279,9 @@ Board::~Board(void) {
     grid_iterater_board(board_start, [](cell_t* cell) {
         if (cell->west != nullptr) {
             delete cell->west;
+        }
+        if (cell->east == nullptr) {
+            delete cell;
         }
     });
 }

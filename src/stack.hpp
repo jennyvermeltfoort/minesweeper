@@ -1,5 +1,5 @@
 
-#include "board.hh"
+#include "board.hpp"
 
 #ifndef __GUARD_STACK_H
 #define __GUARD_STACK_H
@@ -16,9 +16,9 @@ class BoardEncoded {
     board_info_t info;
 
    public:
-    BoardEncoded(Board* board);
+    explicit BoardEncoded(const Board& board);
     ~BoardEncoded(void);
-    void decode(Board* board);
+    void decode(Board& board);
 };
 
 typedef struct BOARD_STACK_CELL_T board_stack_cell_t;

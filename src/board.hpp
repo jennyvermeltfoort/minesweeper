@@ -3,24 +3,12 @@
 #ifndef __GUARD_BOARD_H
 #define __GUARD_BOARD_H
 
-typedef enum CELL_STATE_E {
-    CELL_STATE_FLAG = 1,
-    CELL_STATE_OPEN = 2,
-    CELL_STATE_BOMB = 4,
-    CELL_STATE_MASK = 0x7,
-} cell_state_e;
-
-typedef enum BOARD_STATE_E {
-    BOARD_STATE_SHOW_BOMB = 1,
-    BOARD_STATE_DEAD = 2,
-    BOARD_STATE_DONE = 4,
-    BOARD_STATE_MASK = 0x7,
-} board_state_e;
-
 typedef struct CELL_T cell_t;
 typedef struct CELL_INFO_T {
-    unsigned int state;
-    unsigned int bomb_count;
+    bool is_flag;
+    bool is_bomb;
+    bool is_open;
+    unsigned char bomb_count;
 } cell_info_t;
 struct CELL_T {
     cell_info_t info;
@@ -34,13 +22,6 @@ struct CELL_T {
     cell_t *south_west;
 };
 
-bool cell_info_is_state(const cell_info_t *const info,
-                        const cell_state_e state);
-void cell_info_set_state(cell_info_t *const info,
-                         const cell_state_e state);
-void cell_info_unset_state(cell_info_t *const info,
-                           const cell_state_e state);
-
 typedef struct BOARD_SIZE_T {
     unsigned int x;
     unsigned int y;
@@ -48,7 +29,9 @@ typedef struct BOARD_SIZE_T {
 typedef struct BOARD_STATUS_T {
     int flag_count;
     int open_count;
-    unsigned int state;
+    bool show_bomb;
+    bool is_dead;
+    bool is_done;
 } board_status_t;
 typedef struct BOARD_INFO_T {
     board_size_t size;
@@ -68,16 +51,14 @@ class Board {
           const unsigned int bomb_count);
     ~Board(void);
 
+    void grid_iterater(std::function<void(cell_info_t *const)> &func);
     void grid_iterater(
-        std::function<void(cell_info_t *const)> func_x,
-        std::function<void(cell_info_t *const)> func_y);
+        std::function<void(const cell_info_t *const)> func_x,
+        std::function<void(const cell_info_t *const)> func_y) const;
 
     board_info_t get_info(void) const;
     void set_status(board_status_t state);
-
-    bool is_state(const board_state_e state) const;
-    void set_state(const board_state_e state);
-    void toggle_state(const board_state_e state);
+    void toggle_show_bomb(void);
 
     void cursor_set_open(void);
     void cursor_set_flag(void);

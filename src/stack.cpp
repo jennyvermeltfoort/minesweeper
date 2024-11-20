@@ -1,34 +1,33 @@
-#include "stack.hh"
+#include "stack.hpp"
 
-BoardEncoded::BoardEncoded(Board *board) : info(board->get_info()) {
+BoardEncoded::BoardEncoded(const Board &board)
+    : info(board.get_info()) {
     start = new cell_encoded_t;
     cell_encoded_t *cell = start;
-    std::function<void(cell_info_t *const)> func =
-        [&cell](cell_info_t *const info) {
-            cell->info.state = info->state;
-            cell->info.bomb_count = info->bomb_count;
+    std::function<void(const cell_info_t *const)> func =
+        [&cell](const cell_info_t *const info) {
+            cell->info = *info;
             cell->next = new cell_encoded_t;
             cell = cell->next;
         };
-    board->grid_iterater(func, nullptr);
+    board.grid_iterater(func, nullptr);
 }
 
-void BoardEncoded::decode(Board *board) {
-    const board_size_t size = board->get_info().size;
+void BoardEncoded::decode(Board &board) {
+    const board_size_t size = board.get_info().size;
     cell_encoded_t *cell = start;
 
     if (info.size.x != size.x || info.size.y != size.y) {
         return;
     }
 
-    board->set_status(info.status);
+    board.set_status(info.status);
     std::function<void(cell_info_t *const)> func =
         [&cell](cell_info_t *const info) {
-            info->state = cell->info.state;
-            info->bomb_count = cell->info.bomb_count;
+            *info = cell->info;
             cell = cell->next;
         };
-    board->grid_iterater(func, nullptr);
+    board.grid_iterater(func);
     delete this;
 }
 
@@ -42,10 +41,12 @@ BoardEncoded::~BoardEncoded(void) {
 }
 
 void BoardStack::push(BoardEncoded *encoded) {
-    board_stack_cell_t *cell = new board_stack_cell_t;
-    cell->encoded = encoded;
-    cell->next = start;
-    start = cell;
+    if (encoded != nullptr) {
+        board_stack_cell_t *cell = new board_stack_cell_t;
+        cell->encoded = encoded;
+        cell->next = start;
+        start = cell;
+    }
 }
 
 BoardEncoded *BoardStack::pop(void) {

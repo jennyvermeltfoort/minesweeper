@@ -1,4 +1,4 @@
-#include "print.hh"
+#include "print.hpp"
 
 #include <functional>
 #include <iostream>
@@ -25,9 +25,9 @@ void print_cell(const unsigned int color, char c) {
               << " " << c << " ";
 }
 
-void print_cell(const unsigned int color, unsigned int n) {
+void print_cell(const unsigned int color, int c) {
     std::cout << "\033[48:5:" << +color << "m"
-              << " " << +n << " ";
+              << " " << +c << " ";
 }
 
 void print_clear_screen(void) {
@@ -60,11 +60,11 @@ void print_unset_inverse_fg_bg(void) {
     std::cout << "\033[27m" << std::flush;
 }
 
-void helper_board_state(unsigned int board_state, void (*done)(),
-                        void (*dead)()) {
-    if (board_state & BOARD_STATE_DEAD) {
+void helper_board_state(const board_status_t* const status,
+                        void (*done)(), void (*dead)()) {
+    if (status->is_dead) {
         dead();
-    } else if (board_state & BOARD_STATE_DONE) {
+    } else if (status->is_done) {
         done();
     }
 }
@@ -88,32 +88,30 @@ void print_info(const board_info_t* const info) {
     std::cout << "         " << std::flush;
     print_set_cursor(START_STATE, FRAME_POS_INFO_Y);
     helper_board_state(
-        info->status.state,
+        &info->status,
         []() { std::cout << " You won!" << std::flush; },
         []() { std::cout << "You died!" << std::flush; });
 }
 
-void print_cell(const Board* board, const cell_info_t* const info) {
-    if (board->is_cell_info_cursor(info)) {
+void print_cell(const Board& board, const cell_info_t* const info) {
+    if (board.is_cell_info_cursor(info)) {
         print_set_inverse_fg_bg();
     }
 
-    if (cell_info_is_state(info, CELL_STATE_FLAG)) {
+    if (info->is_flag) {
         print_cell(color_close_bg, 'F');
-    } else if (cell_info_is_state(info, CELL_STATE_BOMB) &&
-               board->is_state(BOARD_STATE_SHOW_BOMB)) {
+    } else if (info->is_bomb && board.get_info().status.show_bomb) {
         print_cell(color_open_bg, 'X');
-    } else if (cell_info_is_state(info, CELL_STATE_OPEN) &&
-               info->bomb_count != 0) {
+    } else if (info->is_open && info->bomb_count != 0) {
         print_cell(color_open_bg, +info->bomb_count);
-    } else if (cell_info_is_state(info, CELL_STATE_OPEN)) {
+    } else if (info->is_open) {
         print_cell(color_open_bg, ' ');
     } else {
         print_cell(color_close_bg, ' ');
     }
     std::cout << std::flush;
 
-    if (board->is_cell_info_cursor(info)) {
+    if (board.is_cell_info_cursor(info)) {
         print_unset_inverse_fg_bg();
     }
 }
@@ -124,7 +122,7 @@ void print_edge(unsigned int size) {
     }
 }
 
-void print_frame(const board_info_t* const info) {
+void print_frame_block(const board_info_t* const info) {
     unsigned int size_index_y =
         info->size.y + FRAME_SIZE_INFO_Y + FRAME_SIZE_INPUT_Y;
     while (size_index_y--) {
@@ -146,37 +144,37 @@ void print_instructions(const board_info_t* const info) {
     }
 }
 
-void print_grid(Board* board) {
+void print_grid(const Board& board) {
     unsigned int index_y = 0;
+    board_status_t status = board.get_info().status;
     helper_board_state(
-        board->get_info().status.state,
-        []() { print_set_foreground(color_done_bg); },
+        &status, []() { print_set_foreground(color_done_bg); },
         []() { print_set_foreground(color_dead_bg); });
 
-    std::function<void(cell_info_t* const)> func_x =
-        [&board](cell_info_t* const info) {
+    std::function<void(const cell_info_t* const)> func_x =
+        [&board](const cell_info_t* const info) {
             print_cell(board, info);
         };
-    std::function<void(cell_info_t* const)> func_y =
-        [&index_y](cell_info_t* const) {
+    std::function<void(const cell_info_t* const)> func_y =
+        [&index_y](const cell_info_t* const) {
             const unsigned int START_BOARD = CELL_HEIGHT * 4;
             print_set_cursor(FRAME_POS_START_TEXT,
                              START_BOARD + CELL_HEIGHT * index_y++);
         };
-    board->grid_iterater(func_x, func_y);
+    board.grid_iterater(func_x, func_y);
 }
 
-void print_init(Board* board) {
-    board_info_t info = board->get_info();
+void BoardPrinter::print_frame(void) {
+    board_info_t info = board.get_info();
     print_set_foreground(color_info_fg);
     print_set_background(color_frame_bg);
     print_clear_screen();
-    print_frame(&info);
+    print_frame_block(&info);
     print_instructions(&info);
 }
 
 void BoardPrinter::print(void) {
-    board_info_t info = board->get_info();
+    board_info_t info = board.get_info();
     print_info(&info);
     print_grid(board);
     print_set_foreground(color_info_fg);
@@ -184,7 +182,4 @@ void BoardPrinter::print(void) {
     print_set_cursor_input(&info);
 }
 
-BoardPrinter::BoardPrinter(Board* _board) : board(_board) {
-    print_init(board);
-    print();
-}
+BoardPrinter::BoardPrinter(const Board& _board) : board(_board) {}

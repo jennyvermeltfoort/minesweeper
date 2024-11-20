@@ -5,10 +5,10 @@ SRC_DIR 	= src
 BUILD_DIR 	= build
 TARGET 		= minesweeper
 
-SRC = ${wildcard $(SRC_DIR)/*.cc}
-OBJ = ${patsubst $(SRC_DIR)/%.cc,$(BUILD_DIR)/%.o,${SRC}}
+SRC = ${wildcard $(SRC_DIR)/*.cpp}
+OBJ = ${patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,${SRC}}
 
-$(BUILD_DIR)/%.o : $(SRC_DIR)/%.cc
+$(BUILD_DIR)/%.o : $(SRC_DIR)/%.cpp
 	mkdir -p ${dir $@}
 	$(CC) $(CFLAGS) -o $@ $< -c
 
