@@ -29,7 +29,7 @@ struct BOARD_STACK_CELL_T {
 
 class BoardStack {
    private:
-    board_stack_cell_t* start;
+    board_stack_cell_t* start = nullptr;
 
    public:
     ~BoardStack(void);

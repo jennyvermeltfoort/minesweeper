@@ -13,9 +13,9 @@ class BoardHandler {
     BoardStack* stack;
 
    public:
-    BoardHandler(Board* const _board);
+    BoardHandler(Board* const board);
     ~BoardHandler(void);
-    void parse_input(const char c, bool* const _is_end);
+    void parse_input(const char c, bool* const is_end);
 };
 
 #endif  // __GUARD_INPUT_H

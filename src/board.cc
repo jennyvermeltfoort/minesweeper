@@ -1,8 +1,8 @@
+#include "board.hh"
+
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
-
-#include "board.hh"
 
 #define NEIGHBOUR_COUNT 8
 typedef struct CELL_NEIGHBOURS_T {
@@ -178,7 +178,7 @@ void Board::cursor_move_south(void) {
 void Board::cursor_move_west(void) { set_cursor(board_cursor->west); }
 void Board::cursor_move_east(void) { set_cursor(board_cursor->east); }
 
-int cell_recursive_open(cell_t* cell, cell_t* origin) {
+int cell_recursive_open(cell_t* cell) {
     int counter_opened = 1;
     cell->info.state |= CELL_STATE_OPEN;
 
@@ -190,7 +190,7 @@ int cell_recursive_open(cell_t* cell, cell_t* origin) {
         cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
         if (neighbour != nullptr &&
             !(neighbour->info.state & CELL_STATE_OPEN)) {
-            counter_opened += cell_recursive_open(neighbour, cell);
+            counter_opened += cell_recursive_open(neighbour);
         }
     }
 
@@ -213,7 +213,7 @@ void Board::cursor_set_open(void) {
 
     if (!(cell_info_is_state(info, CELL_STATE_OPEN))) {
         board_info.status.open_count -=
-            cell_recursive_open(board_cursor, nullptr);
+            cell_recursive_open(board_cursor);
     }
 
     if (board_info.status.open_count <= 0) {

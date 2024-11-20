@@ -1,7 +1,7 @@
+#include "print.hh"
+
 #include <functional>
 #include <iostream>
-
-#include "print.hh"
 
 const unsigned int color_frame_bg = 240;
 const unsigned int color_open_bg = 241;
@@ -134,9 +134,9 @@ void print_frame(const board_info_t* const info) {
 }
 
 void print_instructions(const board_info_t* const info) {
-    std::string instructions[3] = {"<h,j,k,l> left,down,up,right",
-                                   "<space> open | <f> flag",
-                                   "<p> previous"};
+    const std::string instructions[3] = {
+        "<h,j,k,l> left,down,up,right", "<space> open | <f> flag",
+        "<p> previous"};
     const unsigned int START_INPUT_Y =
         CELL_HEIGHT * info->size.y + FRAME_SIZE_INFO_Y + 1;
     for (unsigned int i = 0; i < 3; i++) {
@@ -158,7 +158,7 @@ void print_grid(Board* board) {
             print_cell(board, info);
         };
     std::function<void(cell_info_t* const)> func_y =
-        [&index_y](cell_info_t* const info) {
+        [&index_y](cell_info_t* const) {
             const unsigned int START_BOARD = CELL_HEIGHT * 4;
             print_set_cursor(FRAME_POS_START_TEXT,
                              START_BOARD + CELL_HEIGHT * index_y++);

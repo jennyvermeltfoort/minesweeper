@@ -1,7 +1,6 @@
 #include "stack.hh"
 
-BoardEncoded::BoardEncoded(Board *board) {
-    info = board->get_info();
+BoardEncoded::BoardEncoded(Board *board) : info(board->get_info()) {
     start = new cell_encoded_t;
     cell_encoded_t *cell = start;
     std::function<void(cell_info_t *const)> func =
