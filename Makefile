@@ -19,10 +19,5 @@ plot: ${OBJ}
 	./${TARGET} -w 20 -h 20 -b 200 -r output.txt -i 10000
 	gnuplot -c gnuplot.script
 
-opd:
-	echo $(OBJ)
-	$(CC) $(CFLAGS) -o po.o opdracht/pointer_opdracht.cc 
-	$(CC) $(CFLAGS) -o od.o opdracht/opdracht_dubbel.cc 
-
 clean:
 	$(RM) -rf $(BUILD_DIR)
