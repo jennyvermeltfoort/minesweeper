@@ -71,7 +71,7 @@ void BoardHandler::automated(const unsigned int width, const unsigned int height
 	};
         srand(time(nullptr));
 	Board board = Board(width, height, bomb_count);
-    output_file << "won;lost" << endl;
+    output_file << "index;won;lost" << endl;
     while (iterations-- > 0){
 	board_info_t info = board.get_info();
         while(!info.status.is_dead && !info.status.is_done) {
@@ -79,9 +79,9 @@ void BoardHandler::automated(const unsigned int width, const unsigned int height
 	    info = board.get_info();
         }
 	if (info.status.is_dead) {
-    		output_file << "0;" << +info.step_count << endl;
+    		output_file << iterations << ";0;" << +info.step_count << endl;
 	} else {
-    		output_file << +info.step_count << ";0" << endl;
+    		output_file << iterations << ";" << +info.step_count << ";0" << endl;
 	}
 	board.reinitialize();
     }
