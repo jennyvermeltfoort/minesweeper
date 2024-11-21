@@ -1,6 +1,8 @@
 #include "handler.hpp"
 
 #include <functional>
+#include <cstdlib>
+#include <ctime>
 #include <unordered_map>
 using namespace std;
 
@@ -33,7 +35,7 @@ static unordered_map<char, callback_data_t> map_callback = {
     {'p', {.callback_stack = board_load_prev}},
 };
 
-void BoardHandler::parse_input(const char c, bool* const is_end) {
+void BoardHandler::user_parse_input(Board &board, const char c, bool* const is_end) {
     if (c == 'e') {
         *is_end = true;
         return;
@@ -51,11 +53,42 @@ void BoardHandler::parse_input(const char c, bool* const is_end) {
         }
     }
 
-    printer.print();
+    printer.print(board);
 }
 
-BoardHandler::BoardHandler(Board& _board)
-    : board(_board),
+void BoardHandler::user_init(const Board&board) {
+	printer.print_frame(board);
+	printer.print(board);
+}
+#include <iostream>
+void BoardHandler::automated(const unsigned int width, const unsigned int height, const unsigned int bomb_count,fstream &output_file, unsigned int iterations) {
+    function<void(Board&)> func_arr[5] = {
+		&Board::cursor_move_west,
+		&Board::cursor_move_south,
+		&Board::cursor_move_north,
+		&Board::cursor_move_east,
+		&Board::cursor_set_open,
+	};
+        srand(time(nullptr));
+	Board board = Board(width, height, bomb_count);
+    output_file << "won;lost" << endl;
+    while (iterations-- > 0){
+	board_info_t info = board.get_info();
+        while(!info.status.is_dead && !info.status.is_done) {
+	    func_arr[rand() % 5](board);
+	    info = board.get_info();
+        }
+	if (info.status.is_dead) {
+    		output_file << "0;" << +info.step_count << endl;
+	} else {
+    		output_file << +info.step_count << ";0" << endl;
+	}
+	board.reinitialize();
+    }
+}
+
+BoardHandler::BoardHandler(void)
+    : 
       stack(BoardStack()),
-      printer(BoardPrinter(_board)),
-      printer_enabled(false) {}
+      printer(BoardPrinter())
+       {}

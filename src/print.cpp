@@ -13,7 +13,7 @@ const unsigned int color_info_fg = 255;
 const unsigned int CELL_WIDTH = 3;
 const unsigned int CELL_HEIGHT = 1;
 const unsigned int FRAME_POS_START_TEXT = CELL_WIDTH + 1;
-const unsigned int FRAME_SIZE_INFO_Y = 3;
+const unsigned int FRAME_SIZE_INFO_Y = 4;
 const unsigned int FRAME_SIZE_INPUT_Y = 6;
 
 void set_inverse_fg_bg(void) { cout << "\033[7m" << flush; }
@@ -57,17 +57,20 @@ void print_info(const board_info_t* const info) {
     const unsigned int FRAME_POS_INFO_Y = CELL_HEIGHT * 2;
     const unsigned int START_FLAG = FRAME_POS_START_TEXT + 8;
     const unsigned int START_OPEN = FRAME_POS_START_TEXT + 21;
+    const unsigned int START_STEP = FRAME_POS_START_TEXT + 34;
     const unsigned int START_STATE = CELL_WIDTH * (info->size.x + 1) - 8;
     set_background(color_frame_bg);
     set_cursor(FRAME_POS_START_TEXT, FRAME_POS_INFO_Y);
-    cout << "Flags: [   ]; Open: [   ]";
+    cout << "Flags: [   ]; Open: [   ]; Step: [   ]";
     set_cursor(START_FLAG, CELL_HEIGHT * FRAME_POS_INFO_Y);
     cout << +info->status.flag_count << flush;
     set_cursor(START_OPEN, CELL_HEIGHT * FRAME_POS_INFO_Y);
     cout << +info->status.open_count << flush;
-    set_cursor(START_STATE, FRAME_POS_INFO_Y);
+    set_cursor(START_STEP, CELL_HEIGHT * FRAME_POS_INFO_Y);
+    cout << +info->step_count << flush;
+    set_cursor(START_STATE, FRAME_POS_INFO_Y+1);
     cout << "         " << flush;
-    set_cursor(START_STATE, FRAME_POS_INFO_Y);
+    set_cursor(START_STATE, FRAME_POS_INFO_Y+1);
     helper_board_state(
         &info->status, []() { cout << " You won!" << flush; },
         []() { cout << "You died!" << flush; });
@@ -145,7 +148,7 @@ void print_grid(const Board& board) {
     set_foreground(color_info_fg);
 }
 
-void print_init(const Board& board) {
+void BoardPrinter::print_frame(const Board &board) {
     board_info_t info = board.get_info();
     set_foreground(color_info_fg);
     clear_screen();
@@ -153,14 +156,10 @@ void print_init(const Board& board) {
     print_instructions(&info);
 }
 
-void BoardPrinter::print(void) {
+void BoardPrinter::print(const Board&board) {
     board_info_t info = board.get_info();
     print_info(&info);
     print_grid(board);
     set_cursor_input(&info);
 }
 
-BoardPrinter::BoardPrinter(const Board& _board) : board(_board) {
-    print_init(board);
-    print();
-}

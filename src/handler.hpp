@@ -1,4 +1,6 @@
 
+#include <fstream>
+
 #include "board.hpp"
 #include "print.hpp"
 #include "stack.hpp"
@@ -8,15 +10,15 @@
 
 class BoardHandler {
    private:
-    Board& board;
     BoardStack stack;
     BoardPrinter printer;
     bool printer_enabled;
 
    public:
-    explicit BoardHandler(Board& board);
-    void print_frame(void);
-    void parse_input(const char c, bool* const is_end);
+    BoardHandler(void);
+    void user_init(const Board &board);
+    void user_parse_input(Board &board,const char c, bool* const is_end);
+    void automated(const unsigned int width, const unsigned int height, const unsigned int bomb_count,std::fstream & output_file, unsigned int iterations);
 };
 
 #endif  // __GUARD_INPUT_H

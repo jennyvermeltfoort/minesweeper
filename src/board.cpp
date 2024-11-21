@@ -121,26 +121,25 @@ cell_t* grid_walk_random_step(cell_t* cell) {
     return cell;
 }
 
-void cell_set_bomb(cell_t* cell) {
+void cell_toggle_bomb(cell_t* cell) {
     cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
         cell_t* neighbour = neighbours.array[i];
         if (neighbour != nullptr) {
-            neighbour->info.bomb_count++;
+            neighbour->info.bomb_count += (cell->info.is_bomb) ? -1 : 1;
         }
     }
-    cell->info.is_bomb = true;
+    cell->info.is_bomb = !cell->info.is_bomb;
 }
 
-void bomb_init(cell_t* const board_start, unsigned int max_step_size,
-               unsigned int bomb_count) {
+void init_bomb(cell_t * board_start, unsigned int bomb_count, unsigned int limit) {
     cell_t* cell = board_start;
     while (bomb_count-- > 0) {
-        unsigned int steps = rand() % max_step_size;
-        while (cell->info.is_bomb || steps-- > 0) {
+        unsigned int steps = rand() % limit;
+        while (cell->info.is_bomb || cell->info.is_open || steps-- > 0) {
             cell = grid_walk_random_step(cell);
         }
-        cell_set_bomb(cell);
+        cell_toggle_bomb(cell);
     }
 }
 
@@ -150,19 +149,18 @@ bool Board::is_cell_info_cursor(const cell_info_t* const info) const {
     return (cell == board_cursor);
 }
 
-int cell_recursive_open(cell_t* cell) {
-    int open_count = 1;
-    cell->info.is_open = true;
+void cell_recursive_open(cell_t* cell, int &open_counter) {
+	open_counter--;
+    	cell->info.is_open = true;
     if (cell->info.bomb_count != 0) {
-        return open_count;
+        return;
     }
     for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
         cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
         if (neighbour != nullptr && !neighbour->info.is_open) {
-            open_count += cell_recursive_open(neighbour);
+            cell_recursive_open(neighbour, open_counter);
         }
     }
-    return open_count;
 }
 
 void Board::cursor_set_open(void) {
@@ -171,13 +169,17 @@ void Board::cursor_set_open(void) {
         board_info.status.is_done) {
         return;
     }
+	board_info.step_count++;
+    if (info->is_bomb && board_info.status.open_count == static_cast<int>(board_info.size.x * board_info.size.y - board_info.bomb_count) ) {
+	    cell_toggle_bomb(board_cursor);
+    }
     if (info->is_bomb) {
         board_info.status.is_dead = true;
         board_info.status.show_bomb = true;
         return;
     }
     if (!info->is_open) {
-        board_info.status.open_count -= cell_recursive_open(board_cursor);
+	    cell_recursive_open(board_cursor, board_info.status.open_count);
     }
     if (board_info.status.open_count <= 0) {
         board_info.status.is_done = true;
@@ -223,18 +225,32 @@ void Board::toggle_show_bomb(void) {
     board_info.status.show_bomb = !board_info.status.show_bomb;
 }
 
+void Board::reinitialize(void) {
+    grid_iterater([](cell_info_t* const info) {
+        cell_t* cell = get_cell_from_info(info);
+	cell->info = {0};
+    });
+    board_info.step_count = 0;
+    board_info.status = {0};
+    board_info.status.open_count = static_cast<int>(board_info.size.x * board_info.size.y - board_info.bomb_count);
+    init_bomb(board_start, board_info.bomb_count, board_info.size.x);
+    set_cursor(&board_cursor, board_start);
+}
+
 Board::Board(const unsigned int size_x, const unsigned int size_y,
              const unsigned int bomb_count)
-    : board_info({
+    : board_start(new cell_t), board_info({
           board_size_t{size_x, size_y},
           board_status_t{static_cast<int>(bomb_count),
                          static_cast<int>(size_x * size_y - bomb_count), false,
                          false, false},
+			 bomb_count,
+			 0,
       }) {
     srand(time(nullptr));
     grid_alloc(board_start, board_info.size.y - 1, board_info.size.x - 1);
     grid_iterater(cell_populate);
-    bomb_init(board_start, board_info.size.x, bomb_count);
+		init_bomb(board_start, board_info.bomb_count, board_info.size.x);
     set_cursor(&board_cursor, board_start);
 }
 

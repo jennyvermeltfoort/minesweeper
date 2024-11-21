@@ -36,19 +36,22 @@ typedef struct BOARD_STATUS_T {
 typedef struct BOARD_INFO_T {
     board_size_t size;
     board_status_t status;
+    unsigned int bomb_count;
+    unsigned int step_count;
 } board_info_t;
 
 class Board {
    private:
-    cell_t *const board_start = new cell_t;
+    cell_t *const board_start;
     cell_t *board_cursor;
     board_info_t board_info;
 
    public:
-    Board(const unsigned int size_x, const unsigned int size_y,
-          const unsigned int bomb_count);
+    Board(const unsigned int size_x, const unsigned int size_y, const unsigned int bomb_count);
     ~Board(void);
 
+    // perform func for every cell in grid, for every cell in row from 
+    // left to right from top to bottom.
     void grid_iterater(std::function<void(cell_info_t *const)> func);
     void grid_iterater(
         std::function<void(const cell_info_t *const)> func_x,
@@ -57,6 +60,8 @@ class Board {
     board_info_t get_info(void) const;
     void set_status(board_status_t state);
     void toggle_show_bomb(void);
+
+    void reinitialize(void);
 
     void cursor_set_open(void);
     void cursor_set_flag(void);

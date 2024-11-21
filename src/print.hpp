@@ -5,12 +5,9 @@
 #define __GUARD_PRINT_H
 
 class BoardPrinter {
-   private:
-    const Board& board;
-
    public:
-    explicit BoardPrinter(const Board& board);
-    void print(void);
+    void print_frame(const Board &board);
+    void print(const Board &board);
 };
 
 #endif  // __GUARD_PRINT_H
