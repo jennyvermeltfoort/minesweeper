@@ -10,11 +10,10 @@
 
 class BoardHandler {
    private:
-    BoardStack stack;
-    BoardPrinter printer;
+    BoardStack stack();
+    BoardPrinter printer();
 
    public:
-    BoardHandler(void);
     void user_init(const Board &board);
     bool user_parse_input(Board &board, const char c);
     void automated(const unsigned int width, const unsigned int height,
