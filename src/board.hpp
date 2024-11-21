@@ -47,15 +47,17 @@ class Board {
     board_info_t board_info;
 
    public:
-    Board(const unsigned int size_x, const unsigned int size_y, const unsigned int bomb_count);
+    Board(const unsigned int size_x, const unsigned int size_y,
+          const unsigned int bomb_count);
     ~Board(void);
 
-    // perform func for every cell in grid, for every cell in row from 
+    // perform func for every cell in grid, for every cell in row from
     // left to right from top to bottom.
-    void grid_iterater(std::function<void(cell_info_t *const)> func);
     void grid_iterater(
         std::function<void(const cell_info_t *const)> func_x,
         std::function<void(const cell_info_t *const)> func_y) const;
+
+    void set_cell_info(const cell_info_t *const, cell_info_t info);
 
     board_info_t get_info(void) const;
     void set_status(board_status_t state);

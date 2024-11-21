@@ -1,8 +1,8 @@
 #include "handler.hpp"
 
-#include <functional>
 #include <cstdlib>
 #include <ctime>
+#include <functional>
 #include <unordered_map>
 using namespace std;
 
@@ -24,21 +24,20 @@ void board_load_prev(Board& board, BoardStack& stack) {
     }
 }
 
-static unordered_map<char, callback_data_t> map_callback = {
-    {'h', {.callback_void = &Board::cursor_move_west}},
-    {'j', {.callback_void = &Board::cursor_move_south}},
-    {'k', {.callback_void = &Board::cursor_move_north}},
-    {'l', {.callback_void = &Board::cursor_move_east}},
-    {'s', {.callback_void = &Board::toggle_show_bomb}},
-    {' ', {.callback_void = &Board::cursor_set_open, .store = true}},
-    {'f', {.callback_void = &Board::cursor_set_flag, .store = true}},
-    {'p', {.callback_stack = board_load_prev}},
-};
+bool BoardHandler::user_parse_input(Board& board, const char c) {
+    static unordered_map<char, callback_data_t> map_callback = {
+        {'h', {.callback_void = &Board::cursor_move_west}},
+        {'j', {.callback_void = &Board::cursor_move_south}},
+        {'k', {.callback_void = &Board::cursor_move_north}},
+        {'l', {.callback_void = &Board::cursor_move_east}},
+        {'s', {.callback_void = &Board::toggle_show_bomb}},
+        {' ', {.callback_void = &Board::cursor_set_open, .store = true}},
+        {'f', {.callback_void = &Board::cursor_set_flag, .store = true}},
+        {'p', {.callback_stack = board_load_prev}},
+    };
 
-void BoardHandler::user_parse_input(Board &board, const char c, bool* const is_end) {
     if (c == 'e') {
-        *is_end = true;
-        return;
+        return true;
     }
     if (map_callback.find(c) != map_callback.end()) {
         callback_data_t data = map_callback[c];
@@ -54,41 +53,38 @@ void BoardHandler::user_parse_input(Board &board, const char c, bool* const is_e
     }
 
     printer.print(board);
+    return false;
 }
 
-void BoardHandler::user_init(const Board&board) {
-	printer.print_frame(board);
-	printer.print(board);
+void BoardHandler::user_init(const Board& board) {
+    printer.print_frame(board);
+    printer.print(board);
 }
-#include <iostream>
-void BoardHandler::automated(const unsigned int width, const unsigned int height, const unsigned int bomb_count,fstream &output_file, unsigned int iterations) {
+
+void BoardHandler::automated(const unsigned int width,
+                             const unsigned int height,
+                             const unsigned int bomb_count,
+                             fstream& output_file, unsigned int iterations) {
     function<void(Board&)> func_arr[5] = {
-		&Board::cursor_move_west,
-		&Board::cursor_move_south,
-		&Board::cursor_move_north,
-		&Board::cursor_move_east,
-		&Board::cursor_set_open,
-	};
-        srand(time(nullptr));
-	Board board = Board(width, height, bomb_count);
-    output_file << "index;won;lost" << endl;
-    while (iterations-- > 0){
-	board_info_t info = board.get_info();
-        while(!info.status.is_dead && !info.status.is_done) {
-	    func_arr[rand() % 5](board);
-	    info = board.get_info();
+        &Board::cursor_move_west, &Board::cursor_move_south,
+        &Board::cursor_move_north, &Board::cursor_move_east,
+        &Board::cursor_set_open};
+    srand(time(nullptr));
+    Board board = Board(width, height, bomb_count);
+    while (iterations-- > 0) {
+        board_info_t info = board.get_info();
+        while (!info.status.is_dead && !info.status.is_done) {
+            func_arr[rand() % 5](board);
+            info = board.get_info();
         }
-	if (info.status.is_dead) {
-    		output_file << iterations << ";0;" << +info.step_count << endl;
-	} else {
-    		output_file << iterations << ";" << +info.step_count << ";0" << endl;
-	}
-	board.reinitialize();
+        if (info.status.is_dead) {
+            output_file << "lost " << +info.step_count << endl;
+        } else {
+            output_file << "won " << +info.step_count << endl;
+        }
+        board.reinitialize();
     }
 }
 
 BoardHandler::BoardHandler(void)
-    : 
-      stack(BoardStack()),
-      printer(BoardPrinter())
-       {}
+    : stack(BoardStack()), printer(BoardPrinter()) {}

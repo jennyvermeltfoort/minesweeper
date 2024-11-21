@@ -1,0 +1,8 @@
+#set terminal postfile       (These commented lines would be used to )
+#set output  "d1_plot.ps"    (generate a postscript file.            )
+set title "Minesweeper"
+set xlabel "Aantal zetten"
+set ylabel "Aantal spelletjes"
+
+plot '< sort -g -k2,2 output.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines
+pause -1 "Hit any key to continue"

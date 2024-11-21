@@ -20,18 +20,6 @@ cell_t* get_cell_from_info(cell_info_t* info) {
     return reinterpret_cast<cell_t*>(info - offsetof(cell_t, info));
 }
 
-void Board::grid_iterater(function<void(cell_info_t* const info)> func) {
-    cell_t* cell_y = board_start;
-    while (cell_y != nullptr) {
-        cell_t* cell_x = cell_y;
-        cell_y = cell_y->south;
-        while (cell_x != nullptr) {
-            func(&cell_x->info);
-            cell_x = cell_x->east;
-        }
-    }
-}
-
 void Board::grid_iterater(
     function<void(const cell_info_t* const info)> func_x,
     function<void(const cell_info_t* const info)> func_y) const {
@@ -98,8 +86,8 @@ void cell_populate_south(cell_t* cell) {
     }
 }
 
-void cell_populate(cell_info_t* const info) {
-    cell_t* cell = get_cell_from_info(info);
+void cell_populate(const cell_info_t* const info) {
+    cell_t* cell = get_cell_from_info(const_cast<cell_info_t*>(info));
     if (cell->west == nullptr) {  // most western column
         return cell_populate_east(cell);
     }
@@ -132,7 +120,8 @@ void cell_toggle_bomb(cell_t* cell) {
     cell->info.is_bomb = !cell->info.is_bomb;
 }
 
-void init_bomb(cell_t * board_start, unsigned int bomb_count, unsigned int limit) {
+void init_bomb(cell_t* board_start, unsigned int bomb_count,
+               unsigned int limit) {
     cell_t* cell = board_start;
     while (bomb_count-- > 0) {
         unsigned int steps = rand() % limit;
@@ -149,9 +138,9 @@ bool Board::is_cell_info_cursor(const cell_info_t* const info) const {
     return (cell == board_cursor);
 }
 
-void cell_recursive_open(cell_t* cell, int &open_counter) {
-	open_counter--;
-    	cell->info.is_open = true;
+void cell_recursive_open(cell_t* cell, int& open_counter) {
+    open_counter--;
+    cell->info.is_open = true;
     if (cell->info.bomb_count != 0) {
         return;
     }
@@ -165,22 +154,23 @@ void cell_recursive_open(cell_t* cell, int &open_counter) {
 
 void Board::cursor_set_open(void) {
     cell_info_t* const info = &board_cursor->info;
-    if (info->is_flag || board_info.status.is_dead ||
+    if (info->is_open || info->is_flag || board_info.status.is_dead ||
         board_info.status.is_done) {
         return;
     }
-	board_info.step_count++;
-    if (info->is_bomb && board_info.status.open_count == static_cast<int>(board_info.size.x * board_info.size.y - board_info.bomb_count) ) {
-	    cell_toggle_bomb(board_cursor);
+    board_info.step_count++;
+    if (info->is_bomb &&
+        board_info.status.open_count ==
+            static_cast<int>(board_info.size.x * board_info.size.y -
+                             board_info.bomb_count)) {
+        cell_toggle_bomb(board_cursor);
     }
     if (info->is_bomb) {
         board_info.status.is_dead = true;
         board_info.status.show_bomb = true;
         return;
     }
-    if (!info->is_open) {
-	    cell_recursive_open(board_cursor, board_info.status.open_count);
-    }
+    cell_recursive_open(board_cursor, board_info.status.open_count);
     if (board_info.status.open_count <= 0) {
         board_info.status.is_done = true;
         board_info.status.show_bomb = true;
@@ -226,42 +216,48 @@ void Board::toggle_show_bomb(void) {
 }
 
 void Board::reinitialize(void) {
-    grid_iterater([](cell_info_t* const info) {
-        cell_t* cell = get_cell_from_info(info);
-	cell->info = {0};
-    });
+    grid_iterater(
+        [](const cell_info_t* const info) {
+            cell_t* cell = get_cell_from_info(const_cast<cell_info_t*>(info));
+            cell->info = {};
+        },
+        nullptr);
     board_info.step_count = 0;
-    board_info.status = {0};
-    board_info.status.open_count = static_cast<int>(board_info.size.x * board_info.size.y - board_info.bomb_count);
+    board_info.status = {};
+    board_info.status.open_count = static_cast<int>(
+        board_info.size.x * board_info.size.y - board_info.bomb_count);
     init_bomb(board_start, board_info.bomb_count, board_info.size.x);
     set_cursor(&board_cursor, board_start);
 }
 
 Board::Board(const unsigned int size_x, const unsigned int size_y,
              const unsigned int bomb_count)
-    : board_start(new cell_t), board_info({
+    : board_start(new cell_t),
+      board_info({
           board_size_t{size_x, size_y},
           board_status_t{static_cast<int>(bomb_count),
                          static_cast<int>(size_x * size_y - bomb_count), false,
                          false, false},
-			 bomb_count,
-			 0,
+          bomb_count,
+          0,
       }) {
     srand(time(nullptr));
     grid_alloc(board_start, board_info.size.y - 1, board_info.size.x - 1);
-    grid_iterater(cell_populate);
-		init_bomb(board_start, board_info.bomb_count, board_info.size.x);
+    grid_iterater(cell_populate, nullptr);
+    init_bomb(board_start, board_info.bomb_count, board_info.size.x);
     set_cursor(&board_cursor, board_start);
 }
 
 Board::~Board(void) {
-    grid_iterater([](cell_info_t* const info) {
-        cell_t* cell = get_cell_from_info(info);
-        if (cell->west != nullptr) {
-            delete cell->west;
-        }
-        if (cell->east == nullptr) {
-            delete cell;
-        }
-    });
+    grid_iterater(
+        [](const cell_info_t* const info) {
+            cell_t* cell = get_cell_from_info(const_cast<cell_info_t*>(info));
+            if (cell->west != nullptr) {
+                delete cell->west;
+            }
+            if (cell->east == nullptr) {
+                delete cell;
+            }
+        },
+        nullptr);
 }

@@ -19,12 +19,13 @@ void BoardEncoded::decode(Board &board) {
         return;
     }
     board.set_status(info.status);
-    std::function<void(cell_info_t *const)> func =
-        [&cell](cell_info_t *const info) {
-            *info = cell->info;
+    std::function<void(const cell_info_t *const)> func =
+        [&cell](const cell_info_t *const info) {
+            cell_info_t *cell_info = const_cast<cell_info_t *>(info);
+            *cell_info = cell->info;
             cell = cell->next;
         };
-    board.grid_iterater(func);
+    board.grid_iterater(func, nullptr);
     delete this;
 }
 

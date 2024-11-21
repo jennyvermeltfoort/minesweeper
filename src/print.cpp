@@ -68,9 +68,9 @@ void print_info(const board_info_t* const info) {
     cout << +info->status.open_count << flush;
     set_cursor(START_STEP, CELL_HEIGHT * FRAME_POS_INFO_Y);
     cout << +info->step_count << flush;
-    set_cursor(START_STATE, FRAME_POS_INFO_Y+1);
+    set_cursor(START_STATE, FRAME_POS_INFO_Y + 1);
     cout << "         " << flush;
-    set_cursor(START_STATE, FRAME_POS_INFO_Y+1);
+    set_cursor(START_STATE, FRAME_POS_INFO_Y + 1);
     helper_board_state(
         &info->status, []() { cout << " You won!" << flush; },
         []() { cout << "You died!" << flush; });
@@ -148,7 +148,7 @@ void print_grid(const Board& board) {
     set_foreground(color_info_fg);
 }
 
-void BoardPrinter::print_frame(const Board &board) {
+void BoardPrinter::print_frame(const Board& board) {
     board_info_t info = board.get_info();
     set_foreground(color_info_fg);
     clear_screen();
@@ -156,10 +156,9 @@ void BoardPrinter::print_frame(const Board &board) {
     print_instructions(&info);
 }
 
-void BoardPrinter::print(const Board&board) {
+void BoardPrinter::print(const Board& board) {
     board_info_t info = board.get_info();
     print_info(&info);
     print_grid(board);
     set_cursor_input(&info);
 }
-
