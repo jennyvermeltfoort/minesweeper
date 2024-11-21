@@ -85,6 +85,3 @@ void BoardHandler::automated(const unsigned int width,
         board.reinitialize();
     }
 }
-
-BoardHandler::BoardHandler(void)
-    : stack(BoardStack()), printer(BoardPrinter()) {}
