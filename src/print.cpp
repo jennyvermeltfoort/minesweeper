@@ -110,7 +110,7 @@ void print_frame_block(const board_info_t* const info) {
     set_cursor(1, 1);
     while (size_index_y--) {
         set_background(color_frame_bg);
-        print_edge(info->size.x + 2);
+        print_edge(((info->size.x + 2) < 15) ? 15 : info->size.x + 2);
         reset_bg();
         cout << endl;
     }

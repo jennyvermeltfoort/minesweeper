@@ -189,10 +189,10 @@ void Board::cursor_set_flag(void) {
         return;
     }
     if (info->is_flag) {
-        info->is_flag = true;
+        info->is_flag = false;
         board_info.status.flag_count++;
     } else if (!info->is_open) {
-        info->is_flag = false;
+        info->is_flag = true;
         board_info.status.flag_count--;
     }
 }
