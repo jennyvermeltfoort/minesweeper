@@ -3,6 +3,10 @@
 set title "Minesweeper"
 set xlabel "Aantal zetten"
 set ylabel "Aantal spelletjes"
+set logscale y 2
+set grid
 
-plot '< sort -g -k2,2 output.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines
+plot '< sort -g -k2,2 output.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines linecolor rgb "red" title "Verloren", \
+    '< sort -g -k2,2 output.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines linecolor rgb "green" title "Gewonnen", \
+    '< sort -g -k2,2 output.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal"
 pause -1 "Hit any key to continue"

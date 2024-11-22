@@ -1,9 +1,9 @@
-#include "handler.hpp"
-
 #include <cstdlib>
 #include <ctime>
 #include <functional>
 #include <unordered_map>
+
+#include "handler.hpp"
 using namespace std;
 
 typedef struct CALLBACK_DATA_T {
@@ -65,18 +65,29 @@ void BoardHandler::automated(const unsigned int width,
                              const unsigned int height,
                              const unsigned int bomb_count,
                              fstream& output_file, unsigned int iterations) {
-    function<void(Board&)> func_arr[5] = {
+    function<void(Board&)> directions[5] = {
         &Board::cursor_move_west, &Board::cursor_move_south,
-        &Board::cursor_move_north, &Board::cursor_move_east,
-        &Board::cursor_set_open};
+        &Board::cursor_move_north, &Board::cursor_move_east};
     srand(time(nullptr));
     Board board = Board(width, height, bomb_count);
     while (iterations-- > 0) {
         board_info_t info = board.get_info();
         while (!info.status.is_dead && !info.status.is_done) {
-            func_arr[rand() % 5](board);
+            for (unsigned int i = 0; i < 3; i++) {
+                unsigned int direction = rand() % 4;
+                unsigned int steps = rand() % (width / 2);
+                while (steps-- > 0) {
+                    directions[(direction + i) % 4](board);
+                }
+            }
+
+            if ((rand() % 10) > 7) {
+                board.cursor_set_open();
+            }
+
             info = board.get_info();
         }
+
         if (info.status.is_dead) {
             output_file << "lost " << +info.step_count << endl;
         } else {
