@@ -11,4 +11,4 @@ main.dSYM/
 build/
 minesweeper
 **/*.swp
-output.txt
+output*.txt

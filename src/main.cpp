@@ -43,7 +43,7 @@ arg_t parse_args(int argc, const char* argv[]) {
 }
 
 int main(int argc, const char* argv[]) {
-    BoardHandler input_handler = BoardHandler();
+    BoardHandler input_handler;
     arg_t args = parse_args(argc, argv);
     if (args.width < 1 || args.height < 1 || args.bomb_count < 1) {
         cout << "Usage: [-w,--width] <num> [-h,--height] <num> "

@@ -1,12 +1,12 @@
 #set terminal postfile       (These commented lines would be used to )
 #set output  "d1_plot.ps"    (generate a postscript file.            )
-set title "Minesweeper"
 set xlabel "Aantal zetten"
 set ylabel "Aantal spelletjes"
 set logscale y 2
 set grid
 
-plot '< sort -g -k2,2 output.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines linecolor rgb "red" title "Verloren", \
-    '< sort -g -k2,2 output.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines linecolor rgb "green" title "Gewonnen", \
-    '< sort -g -k2,2 output.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal"
+set title "Minesweeper"
+plot '< sort -g -k2,2 output_20_20.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 20x20",\
+    '< sort -g -k2,2 output_9_9.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 9x9",\
+    '< sort -g -k2,2 output_15_15.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 15x15"
 pause -1 "Hit any key to continue"

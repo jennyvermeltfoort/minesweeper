@@ -6,8 +6,8 @@
 
 class BoardPrinter {
    public:
-    void print_frame(const Board &board);
-    void print(const Board &board);
+    static void print_frame(const Board &board);
+    static void print(const Board &board);
 };
 
 #endif  // __GUARD_PRINT_H

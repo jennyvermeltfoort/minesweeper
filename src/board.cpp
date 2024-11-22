@@ -116,13 +116,21 @@ void init_bomb(cell_t* board_start, unsigned int bomb_count,
     while (bomb_count-- > 0) {
         unsigned int steps = rand() % limit;
         unsigned int direction = rand() % NEIGHBOUR_COUNT;
-        while (cell->info.is_bomb || cell->info.is_open || steps-- > 0) {
+        while (steps-- > 0) {
             cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
             if (neighbours.array[direction] != nullptr) {
                 cell = neighbours.array[direction];
             } else {
                 direction = (direction + 5) % NEIGHBOUR_COUNT;
             }
+        }
+        while (cell->info.is_bomb || cell->info.is_open) {
+            cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
+            unsigned int random = rand() % NEIGHBOUR_COUNT;
+            while (neighbours.array[random] == nullptr) {
+                random = (random + 5) % NEIGHBOUR_COUNT;
+            }
+            cell = neighbours.array[random];
         }
         cell_toggle_bomb(cell);
     }

@@ -10,8 +10,8 @@
 
 class BoardHandler {
    private:
-    BoardStack stack();
-    BoardPrinter printer();
+    BoardStack stack = BoardStack();
+    static const BoardPrinter printer;
 
    public:
     void user_init(const Board &board);
