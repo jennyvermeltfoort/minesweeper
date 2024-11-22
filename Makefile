@@ -15,7 +15,7 @@ $(BUILD_DIR)/%.o : $(SRC_DIR)/%.cpp
 all: ${OBJ}
 	$(CC) $(CFLAGS) -I$(SRC_DIR) -o $(TARGET) ${OBJ}
 
-plot: ${OBJ}
+plot: all
 	./${TARGET} -w 20 -h 20 -b 50 -r output_20_20.txt -i 100000
 	./${TARGET} -w 15 -h 15 -b 60 -r output_15_15.txt -i 100000
 	./${TARGET} -w 9 -h 9 -b 10 -r output_9_9.txt -i 100000
