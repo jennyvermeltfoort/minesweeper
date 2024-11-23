@@ -81,7 +81,10 @@ void print_cell(const Board& board, const cell_info_t* const info) {
     if (board.is_cell_info_cursor(info)) {
         set_inverse_fg_bg();
     }
-    if (info->is_flag) {
+
+    if (info->is_flag && info->is_bomb && board.get_info().status.show_bomb) {
+        print_cell(color_open_bg, 'C');
+    } else if (info->is_flag) {
         print_cell(color_close_bg, 'F');
     } else if (info->is_bomb && board.get_info().status.show_bomb) {
         print_cell(color_open_bg, 'X');
