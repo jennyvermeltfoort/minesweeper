@@ -11,7 +11,7 @@ typedef struct CELL_NEIGHBORS_T {
 } cell_neighbors_t;
 
 inline int16_t min(int16_t n1, int16_t n2) { return (n1 < n2) ? n1 : n2; }
-inline cell_neighbors_t cell_get_neighbor_array(cell_t* cell) {
+inline cell_neighbors_t cell_neighbors(cell_t* cell) {
     return {.array = {cell->north_west, cell->north, cell->north_east,
                       cell->west, cell->east, cell->south_west, cell->south,
                       cell->south_east}};
@@ -103,7 +103,7 @@ void cell_populate_neighbors(const cell_info_t* const info) {
 }
 
 void cell_toggle_bomb(cell_t* cell) {
-    cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+    cell_neighbors_t neighbors = cell_neighbors(cell);
     for (unsigned int i = 0; i < NEIGHBOR_COUNT; i++) {
         cell_t* neighbor = neighbors.array[i];
         if (neighbor != nullptr) {
@@ -120,7 +120,7 @@ void init_bomb(cell_t* board_start, unsigned int bomb_count,
         unsigned int steps = rand() % limit;
         unsigned int direction = rand() % NEIGHBOR_COUNT;
         while (steps-- > 0) {
-            cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+            cell_neighbors_t neighbors = cell_neighbors(cell);
             if (neighbors.array[direction] != nullptr) {
                 cell = neighbors.array[direction];
             } else {
@@ -130,7 +130,7 @@ void init_bomb(cell_t* board_start, unsigned int bomb_count,
         while (cell->info.is_bomb ||
                cell->info.is_open) {  // need to make sure bomb is placed in a
                                       // empty spot.
-            cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+            cell_neighbors_t neighbors = cell_neighbors(cell);
             unsigned int random = rand() % NEIGHBOR_COUNT;
             while (neighbors.array[random] == nullptr) {
                 random = (random + 5) % NEIGHBOR_COUNT;
@@ -154,7 +154,7 @@ void cell_recursive_open(cell_t* cell, int& open_counter) {
         return;
     }
     for (unsigned int i = 0; i < NEIGHBOR_COUNT; i++) {
-        cell_t* neighbor = cell_get_neighbor_array(cell).array[i];
+        cell_t* neighbor = cell_neighbors(cell).array[i];
         if (neighbor != nullptr && !neighbor->info.is_open) {
             cell_recursive_open(neighbor, open_counter);
         }

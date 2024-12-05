@@ -1,9 +1,9 @@
+#include "handler.hpp"
+
 #include <cstdlib>
 #include <ctime>
 #include <functional>
 #include <unordered_map>
-
-#include "handler.hpp"
 using namespace std;
 
 typedef struct CALLBACK_DATA_T {
@@ -35,7 +35,6 @@ bool BoardHandler::user_parse_input(Board& board, const char c) {
         {'f', {.callback_void = &Board::cursor_set_flag, .store = true}},
         {'p', {.callback_stack = board_load_prev}},
     };
-
     if (c == 'e') {
         return true;
     }
@@ -51,7 +50,6 @@ bool BoardHandler::user_parse_input(Board& board, const char c) {
             data.callback_stack(board, stack);
         }
     }
-
     printer.print(board);
     return false;
 }
