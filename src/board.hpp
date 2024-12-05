@@ -51,7 +51,7 @@ class Board {
           const unsigned int bomb_count);
     ~Board(void);
 
-    // perform func for every cell in grid, for every cell in row from
+    // Perform func for every cell in grid, for every cell in row from
     // left to right from top to bottom.
     void grid_iterater(
         std::function<void(const cell_info_t *const)> func_x,

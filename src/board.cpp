@@ -1,21 +1,24 @@
+#include "board.hpp"
+
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
-
-#include "board.hpp"
 using namespace std;
 
-#define NEIGHBOUR_COUNT 8
-typedef struct CELL_NEIGHBOURS_T {
-    cell_t* array[NEIGHBOUR_COUNT];
-} cell_neighbours_t;
+#define NEIGHBOR_COUNT 8
+typedef struct CELL_NEIGHBORS_T {
+    cell_t* array[NEIGHBOR_COUNT];
+} cell_neighbors_t;
 
 inline int16_t min(int16_t n1, int16_t n2) { return (n1 < n2) ? n1 : n2; }
-inline cell_neighbours_t cell_get_neighbour_array(cell_t* cell) {
+inline cell_neighbors_t cell_get_neighbor_array(cell_t* cell) {
     return {.array = {cell->north_west, cell->north, cell->north_east,
                       cell->west, cell->east, cell->south_west, cell->south,
                       cell->south_east}};
 }
+
+// Get cell pointer from info pointer, the cell_info_t pointer MUST be a member
+// of a cell_t.
 cell_t* get_cell_from_info(cell_info_t* info) {
     return reinterpret_cast<cell_t*>(info - offsetof(cell_t, info));
 }
@@ -61,7 +64,7 @@ void grid_alloc(cell_t* cell_north_west, unsigned int size_y,
     grid_alloc_row(cell_y, size_x);
 }
 
-void cell_populate_east(cell_t* cell) {
+void cell_populate_neighbors_east(cell_t* cell) {
     if (cell->north != nullptr) {
         cell->north_east = cell->north->east;
     }
@@ -70,7 +73,7 @@ void cell_populate_east(cell_t* cell) {
     }
 }
 
-void cell_populate_north(cell_t* cell) {
+void cell_populate_neighbors_north(cell_t* cell) {
     cell->north_west = cell->west->north;
     cell->north = cell->west->north_east;
     if (cell->east != nullptr) {
@@ -78,7 +81,7 @@ void cell_populate_north(cell_t* cell) {
     }
 }
 
-void cell_populate_south(cell_t* cell) {
+void cell_populate_neighbors_south(cell_t* cell) {
     cell->south_west = cell->west->south;
     cell->south = cell->west->south_east;
     if (cell->east != nullptr) {
@@ -86,25 +89,25 @@ void cell_populate_south(cell_t* cell) {
     }
 }
 
-void cell_populate(const cell_info_t* const info) {
+void cell_populate_neighbors(const cell_info_t* const info) {
     cell_t* cell = get_cell_from_info(const_cast<cell_info_t*>(info));
     if (cell->west == nullptr) {  // most western column
-        return cell_populate_east(cell);
+        return cell_populate_neighbors_east(cell);
     }
     if (cell->west->north != nullptr) {
-        cell_populate_north(cell);
+        cell_populate_neighbors_north(cell);
     }
     if (cell->west->south != nullptr) {
-        cell_populate_south(cell);
+        cell_populate_neighbors_south(cell);
     }
 }
 
 void cell_toggle_bomb(cell_t* cell) {
-    cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
-    for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
-        cell_t* neighbour = neighbours.array[i];
-        if (neighbour != nullptr) {
-            neighbour->info.bomb_count += (cell->info.is_bomb) ? -1 : 1;
+    cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+    for (unsigned int i = 0; i < NEIGHBOR_COUNT; i++) {
+        cell_t* neighbor = neighbors.array[i];
+        if (neighbor != nullptr) {
+            neighbor->info.bomb_count += (cell->info.is_bomb) ? -1 : 1;
         }
     }
     cell->info.is_bomb = !cell->info.is_bomb;
@@ -115,22 +118,24 @@ void init_bomb(cell_t* board_start, unsigned int bomb_count,
     cell_t* cell = board_start;
     while (bomb_count-- > 0) {
         unsigned int steps = rand() % limit;
-        unsigned int direction = rand() % NEIGHBOUR_COUNT;
+        unsigned int direction = rand() % NEIGHBOR_COUNT;
         while (steps-- > 0) {
-            cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
-            if (neighbours.array[direction] != nullptr) {
-                cell = neighbours.array[direction];
+            cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+            if (neighbors.array[direction] != nullptr) {
+                cell = neighbors.array[direction];
             } else {
-                direction = (direction + 5) % NEIGHBOUR_COUNT;
+                direction = (direction + 5) % NEIGHBOR_COUNT;
             }
         }
-        while (cell->info.is_bomb || cell->info.is_open) {
-            cell_neighbours_t neighbours = cell_get_neighbour_array(cell);
-            unsigned int random = rand() % NEIGHBOUR_COUNT;
-            while (neighbours.array[random] == nullptr) {
-                random = (random + 5) % NEIGHBOUR_COUNT;
+        while (cell->info.is_bomb ||
+               cell->info.is_open) {  // need to make sure bomb is placed in a
+                                      // empty spot.
+            cell_neighbors_t neighbors = cell_get_neighbor_array(cell);
+            unsigned int random = rand() % NEIGHBOR_COUNT;
+            while (neighbors.array[random] == nullptr) {
+                random = (random + 5) % NEIGHBOR_COUNT;
             }
-            cell = neighbours.array[random];
+            cell = neighbors.array[random];
         }
         cell_toggle_bomb(cell);
     }
@@ -142,18 +147,16 @@ bool Board::is_cell_info_cursor(const cell_info_t* const info) const {
     return (cell == board_cursor);
 }
 
-void cell_recursive_open(cell_t* cell, int& open_counter,
-                         unsigned int& step_count) {
-    step_count++;
+void cell_recursive_open(cell_t* cell, int& open_counter) {
     open_counter--;
     cell->info.is_open = true;
     if (cell->info.bomb_count != 0) {
         return;
     }
-    for (unsigned int i = 0; i < NEIGHBOUR_COUNT; i++) {
-        cell_t* neighbour = cell_get_neighbour_array(cell).array[i];
-        if (neighbour != nullptr && !neighbour->info.is_open) {
-            cell_recursive_open(neighbour, open_counter, step_count);
+    for (unsigned int i = 0; i < NEIGHBOR_COUNT; i++) {
+        cell_t* neighbor = cell_get_neighbor_array(cell).array[i];
+        if (neighbor != nullptr && !neighbor->info.is_open) {
+            cell_recursive_open(neighbor, open_counter);
         }
     }
 }
@@ -164,6 +167,7 @@ void Board::cursor_set_open(void) {
         board_info.status.is_done) {
         return;
     }
+    board_info.step_count++;  // only opening cells are considered a 'step'
     if (info->is_bomb &&
         board_info.status.open_count ==
             static_cast<int>(board_info.size.x * board_info.size.y -
@@ -175,8 +179,7 @@ void Board::cursor_set_open(void) {
         board_info.status.show_bomb = true;
         return;
     }
-    cell_recursive_open(board_cursor, board_info.status.open_count,
-                        board_info.step_count);
+    cell_recursive_open(board_cursor, board_info.status.open_count);
     if (board_info.status.open_count <= 0) {
         board_info.status.is_done = true;
         board_info.status.show_bomb = true;
@@ -249,7 +252,7 @@ Board::Board(const unsigned int size_x, const unsigned int size_y,
       }) {
     srand(time(nullptr));
     grid_alloc(board_start, board_info.size.y - 1, board_info.size.x - 1);
-    grid_iterater(cell_populate, nullptr);
+    grid_iterater(cell_populate_neighbors, nullptr);
     init_bomb(board_start, board_info.bomb_count, board_info.size.x / 2);
     set_cursor(&board_cursor, board_start);
 }

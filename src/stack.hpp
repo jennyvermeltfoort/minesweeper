@@ -1,18 +1,14 @@
 
+#include <list>
+
 #include "board.hpp"
 
 #ifndef __GUARD_STACK_H
 #define __GUARD_STACK_H
 
-typedef struct CELL_ENCODED_T cell_encoded_t;
-struct CELL_ENCODED_T {
-    cell_info_t info;
-    cell_encoded_t* next;
-};
-
 class BoardEncoded {
    private:
-    cell_encoded_t* start = nullptr;
+    std::list<cell_info_t>* list = new std::list<cell_info_t>;
     board_info_t info;
 
    public:
@@ -21,15 +17,9 @@ class BoardEncoded {
     void decode(Board& board);
 };
 
-typedef struct BOARD_STACK_CELL_T board_stack_cell_t;
-struct BOARD_STACK_CELL_T {
-    BoardEncoded* encoded;
-    board_stack_cell_t* next;
-};
-
 class BoardStack {
    private:
-    board_stack_cell_t* start = nullptr;
+    std::list<BoardEncoded*>* list = new std::list<BoardEncoded*>;
 
    public:
     ~BoardStack(void);
