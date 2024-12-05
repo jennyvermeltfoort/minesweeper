@@ -8,7 +8,7 @@
 
 class BoardEncoded {
    private:
-    std::list<cell_info_t>* list = new std::list<cell_info_t>;
+    std::list<cell_info_t>* llist = new std::list<cell_info_t>;
     board_info_t info;
 
    public:
@@ -19,7 +19,7 @@ class BoardEncoded {
 
 class BoardStack {
    private:
-    std::list<BoardEncoded*>* list = new std::list<BoardEncoded*>;
+    std::list<BoardEncoded*>* llist = new std::list<BoardEncoded*>;
 
    public:
     ~BoardStack(void);

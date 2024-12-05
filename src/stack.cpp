@@ -2,7 +2,9 @@
 
 BoardEncoded::BoardEncoded(const Board &board) : info(board.get_info()) {
     std::function<void(const cell_info_t *const)> func =
-        [this](const cell_info_t *const info) { this->list->push_back(*info); };
+        [this](const cell_info_t *const info) {
+            this->llist->push_back(*info);
+        };
     board.grid_iterater(func, nullptr);
 }
 
@@ -15,8 +17,8 @@ void BoardEncoded::decode(Board &board) {
     std::function<void(const cell_info_t *const)> func =
         [this](const cell_info_t *const info) {
             cell_info_t *cell_info = const_cast<cell_info_t *>(info);
-            cell_info_t i = this->list->front();
-            this->list->pop_front();
+            cell_info_t i = this->llist->front();
+            this->llist->pop_front();
             *cell_info = i;
         };
     board.grid_iterater(func, nullptr);
@@ -24,19 +26,19 @@ void BoardEncoded::decode(Board &board) {
 }
 
 BoardEncoded::~BoardEncoded(void) {
-    list->clear();
-    delete list;
+    llist->clear();
+    delete llist;
 }
 
-void BoardStack::push(BoardEncoded *encoded) { list->push_back(encoded); }
+void BoardStack::push(BoardEncoded *encoded) { llist->push_back(encoded); }
 
 BoardEncoded *BoardStack::pop(void) {
-    BoardEncoded *encoded = list->front();
-    list->pop_front();
+    BoardEncoded *encoded = llist->back();
+    llist->pop_back();
     return encoded;
 }
 
-bool BoardStack::is_empty(void) { return list->empty(); }
+bool BoardStack::is_empty(void) { return llist->empty(); }
 
 BoardStack::~BoardStack(void) {
     while (!is_empty()) {

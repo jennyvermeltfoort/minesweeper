@@ -167,13 +167,10 @@ void Board::cursor_set_open(void) {
         board_info.status.is_done) {
         return;
     }
-    board_info.step_count++;  // only opening cells are considered a 'step'
-    if (info->is_bomb &&
-        board_info.status.open_count ==
-            static_cast<int>(board_info.size.x * board_info.size.y -
-                             board_info.bomb_count)) {
+    if (info->is_bomb && board_info.step_count == 0) {
         cell_toggle_bomb(board_cursor);
     }
+    board_info.step_count++;  // only opening cells are considered a 'step'
     if (info->is_bomb) {
         board_info.status.is_dead = true;
         board_info.status.show_bomb = true;
