@@ -9,7 +9,6 @@
 \usepackage{float}
 \usepackage[toc,page]{appendix}
 \graphicspath{ {./images/} }
-\parindent=0pt
 \usepackage{hyperref}
 \hypersetup{
   colorlinks = true,
@@ -43,8 +42,8 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
-\title{Opdracht 3}
-\author{Jenny Vermeltfoort}
+\title{Opdracht 4 \\ \begin{large} Minesweeper\end{large}}
+\author{Jenny Vermeltfoort, 3787494}
 
 \begin{document}
 
@@ -53,12 +52,33 @@
 
 \maketitle
 
-\section{Gebruik}
+\section{Uitleg}
+Dit verslag beschrijft een applicatie; het spel Minesweeper. De oorsprong van het spel Minesweeper is onzeker, er is
+namelijk twijfel tussen verschillende personen. Curt Johnson heeft in 1990 Microsoft Minesweeper ontwikkeld en in 1983
+is het spel Mined-out ontwikkeld door Ian Andrew\cite{wik-minsweep}. Minesweeper is geen exact kopie van Mined-out,
+maar lijkt er wel zwaar door beinvloed\cite{wik-minout}.
 
-De speler van het spel kan het volgende:
+De applicatie bestaat uit een user interface via de Command-line Interface waar de gebruiker verschillende operaties
+kan uitvoeren. De applicatie kan ook automatisch worden afgespeeld, zonder enige interactie van de gebruiker. Zie
+sectie \ref{sec:gebruik} voor meer informatie.
+
+Wat statistieken van de automatische speler worden in sectie \ref{sec:stat} gepresenteerd.
+
+\section{Gebruik}
+\label{sec:gebruik}
+Het spel kan gestart worden met het onderstaande commando.
+\begin{verbatim}
+  $ ./minesweeper --help
+  Example: minesweeper --width 10 --height 10 --bomb_count 10
+  Example: minesweeper -w 10 -h 10 -b 10 -r ./output.txt -i 1000
+  Usage: minesweeper [-w,--width] <num> [-h,--height] <num> 
+                     [-b,--bomb_count] <num> 
+                     [-r,--robot] <output_path> [-i,--iters] <num>
+\end{verbatim}
+
 \begin{enumerate}
   \item de breedte en lengte van het bord configureren.
-  \item het aantal bommben configureren.
+  \item het aantal bommen configureren.
   \item het programma stoppen,
   \item een vlag plaatsen of verwijderen met 'f' als input.
   \item een vakje openen met spatie als input.
@@ -68,16 +88,40 @@ De speler van het spel kan het volgende:
         file. De speler kan het aantal iteraties configureren.
 \end{enumerate}
 
+\subsection{Valgrind}
+Valgrind geeft een weer dat de applicatie geen memmory leaks heeft. Er worden wel een aantal errors gegeven;
+voornamelijk problemen onbeschermde pointer, ie pointer dereferences zonder checks. Maar aangezien de applicatie werkt
+ga ik hier niet verder op in.
+
+\section{Tijd}
+Zie tabel \ref{tab:time} voor de tijd verantwoording.
+
+\begin{table}[H]
+  \begin{center}
+    \begin{tabular}{ l c }
+      Week & Uur \\ \hline
+      46   & 4   \\
+      47   & 4   \\
+      49   & 2   \\
+    \end{tabular}
+
+    \caption{Tijd verantwoording}
+    \label{tab:time}
+  \end{center}
+\end{table}
+
 \section{Resultaten}
+\label{sec:stat}
 De Minesweeper robot is met de volgende configuraties gedraaid:
 \begin{itemize}
-  \item De verschillende bord maten: 9x9, 15x15 en 20x20.
+  \item De verschillende bordmaten: 9x9, 15x15 en 20x20.
   \item Alle maten met verschillende hoeveelheden bommen: 50 of 20 bommen. Dit is bij 9x9,
         60\% en 25\%; bij 15x15, 22\% en 9\%; bij 20x20, 12.5\% en 5\%.
   \item 100.000 potjes per configuratie.
 \end{itemize}
 
-Een aantal resultaten zijn zichtbaar in fig. \ref{fig:plots}. Het is opvallend dat bord maten vijftien bij vijftien en
+Een aantal resultaten zijn zichtbaar in fig. \ref{fig:plots1} en fig. \ref{fig:plots2}. Het is opvallend dat bord maten
+vijftien bij vijftien en
 twintig bij twintig geen
 gewonnen potjes heeft bij vijftig bommen; en met een configuratie van twintig bommen winnen ze beiden binnen 6 zetten,
 zie
@@ -103,6 +147,10 @@ zetten dan dat het wint. Dit is 22\% bij 20 bommen en 28\% bij 50 bommen, zie fi
     \caption{Resultaat gewonnen, 9x9. }
     \label{fig:plot_9_9_won}
   \end{subfigure}
+  \caption{Resultaten 9x9}
+  \label{fig:plots1}
+\end{figure}
+\begin{figure}[H]
   \begin{subfigure}{.49\textwidth}
     \centering
     \includegraphics[width=1\linewidth]{plot_15_15_won}
@@ -127,26 +175,9 @@ zetten dan dat het wint. Dit is 22\% bij 20 bommen en 28\% bij 50 bommen, zie fi
     \caption{Resultaat totaal, 20x20. }
     \label{fig:plot_20_20_total}
   \end{subfigure}
-  \caption{Resultaten}
-  \label{fig:plots}
+  \caption{Resultaten rest}
+  \label{fig:plots2}
 \end{figure}
-
-\section{Tijd}
-Zie tabel \ref{tab:time} voor de tijd verantwoording.
-
-\begin{table}[H]
-  \begin{center}
-    \begin{tabular}{ l c }
-      Week & Uur \\ \hline
-      42   & 8   \\
-      43   & 4   \\
-      45   & 8   \\
-    \end{tabular}
-
-    \caption{Tijd verantwoording}
-    \label{tab:time}
-  \end{center}
-\end{table}
 
 \bibliographystyle{ieeetr}
 \bibliography{bibtex.bib}
