@@ -1,4 +1,17 @@
-
+/**
+ * g++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+ *
+ * The game Minesweeper. The code is split up in modules:
+ *  - handler -> interface between the user, the board and the stack.
+ *  - board -> all logic to manage the game, one board is one game.
+ *  - stack -> the stack which is capable of storing and retrieving board
+ * states.
+ *  - print -> cli printing of the board.
+ *
+ * Date: 11-7-2024
+ * Author: Jenny Vermeltfoort
+ * Number: 3787494
+ */
 #include <iostream>
 #include <string>
 #include <unordered_map>

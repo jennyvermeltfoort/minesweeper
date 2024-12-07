@@ -1,3 +1,24 @@
+/**
+ * A board is a grid of cells. Each cell has pointers to its neighbor
+ * counterparts. A cursor, which is basically a pointer to a specific cell, is
+ * stored. Through this cursor the user may change the state of the board, like
+ * opening and flagging cells. The cursor can be moved.
+ *
+ * The board is created by first allocating all cells. This is done by starting
+ * in the top left. Then allocating a row for each cell walking downwards, when
+ * walking downwards the northern and southern cells are populated. When the row
+ * is allocated the new cells are stored in the west and east neighbor pointer.
+ * So we end up with a western column where each cell has a eastern, a northern
+ * and a southern cell populated. And for each row all western and eastern
+ * neihgbors are populated.
+ *
+ * After full allocation of the grid, all empty neighbors are populated. Since
+ * all horizontal relations between the cells exists (west and east) it is safe
+ * to find northern and southern neighbors through the western relation of each
+ * cell. We start at the top of the western column and walk downwards, while
+ * walking over each row from west to east, on the way populating northwest,
+ * north, northeast, southwest, south, southeast.
+ */
 #include <functional>
 
 #ifndef __GUARD_BOARD_H

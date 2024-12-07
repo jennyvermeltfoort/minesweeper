@@ -1,4 +1,11 @@
-
+/**
+ * Stores the board state into a encoded board. The encoded board only holds the
+ * cell information, the pointer structure of each cell is lost. Storing the
+ * pointer structure is not neccesary since its static. The board decoder just
+ * places the cell information back into all cells of the board, changing the
+ * board state to the stored board state. The stack is just a list of pointers
+ * towards these encoded boards.
+ */
 #include <list>
 
 #include "board.hpp"

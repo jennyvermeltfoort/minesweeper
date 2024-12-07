@@ -45,4 +45,5 @@ BoardStack::~BoardStack(void) {
         BoardEncoded *encoded = pop();
         delete encoded;
     }
+    delete llist;
 }

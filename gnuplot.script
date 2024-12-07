@@ -1,12 +1,51 @@
-#set terminal postfile       (These commented lines would be used to )
-#set output  "d1_plot.ps"    (generate a postscript file.            )
+
 set xlabel "Aantal zetten"
 set ylabel "Aantal spelletjes"
 set logscale y 2
 set grid
+set terminal png size 400,300 enhanced font "Ubuntu Mono,9"
 
-set title "Minesweeper"
-plot '< sort -g -k2,2 output_20_20.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 20x20",\
-    '< sort -g -k2,2 output_9_9.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 9x9",\
-    '< sort -g -k2,2 output_15_15.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "Totaal 15x15"
-pause -1 "Hit any key to continue"
+set title "Minesweeper results, lost, 20x20, 50 or 20 bombs"
+set output 'plot_20_20_lost.png'
+plot '< sort -g -k2,2 output_20_20_50.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-50",\
+    '< sort -g -k2,2 output_20_20_20.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-20"
+
+set title "Minesweeper results, lost, 15x15, 50 or 20 bombs"
+set output 'plot_15_15_lost.png'
+plot '< sort -g -k2,2 output_15_15_50.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-50",\
+    '< sort -g -k2,2 output_15_15_20.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-20"
+
+set title "Minesweeper results, lost, 9x9, 50 or 20 bombs"
+set output 'plot_9_9_lost.png'
+plot '< sort -g -k2,2 output_9_9_50.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-50",\
+    '< sort -g -k2,2 output_9_9_20.txt | grep lost | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-20"
+
+set title "Minesweeper results, won, 20x20, 50 or 20 bombs"
+set output 'plot_20_20_won.png'
+plot '< sort -g -k2,2 output_20_20_50.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-50",\
+    '< sort -g -k2,2 output_20_20_20.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-20"
+
+set title "Minesweeper results, won, 15x15, 50 or 20 bombs"
+set output 'plot_15_15_won.png'
+plot '< sort -g -k2,2 output_15_15_50.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-50",\
+    '< sort -g -k2,2 output_15_15_20.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-20"
+
+set title "Minesweeper results, won, 9x9, 50 or 20 bombs"
+set output 'plot_9_9_won.png'
+plot '< sort -g -k2,2 output_9_9_50.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-50",\
+    '< sort -g -k2,2 output_9_9_20.txt | grep won | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-20"
+
+set title "Minesweeper results, total, 20x20, 50 or 20 bombs"
+set output 'plot_20_20_total.png'
+plot '< sort -g -k2,2 output_20_20_50.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-50",\
+    '< sort -g -k2,2 output_20_20_20.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "20x20-20"
+
+set title "Minesweeper results, total, 15x15, 50 or 20 bombs"
+set output 'plot_15_15_total.png'
+plot '< sort -g -k2,2 output_15_15_50.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-50",\
+    '< sort -g -k2,2 output_15_15_20.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "15x15-20"
+
+set title "Minesweeper results, total, 9x9, 50 or 20 bombs"
+set output 'plot_9_9_total.png'
+plot '< sort -g -k2,2 output_9_9_50.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-50",\
+    '< sort -g -k2,2 output_9_9_20.txt | awk ''!($1="")'' | uniq -c' using 2:1 with lines title "9x9-20"
